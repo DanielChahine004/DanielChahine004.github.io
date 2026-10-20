@@ -1,0 +1,233 @@
+---
+// Hero portrait shown as a PET acquisition: coincidence lines of response build up across a
+// detector ring at an exponentially rising rate, and the portrait "reconstructs" in the field of
+// view as counts accumulate. Lines are sampled from the portrait's own brightness, so they
+// converge where the image is. Runs once on load; click or tap to rescan.
+// Without JavaScript, or with reduced motion, it's simply the portrait inside the ring.
+import Img from './Img.astro';
+
+interface Props { src: string; alt: string; }
+const { src, alt } = Astro.props;
+---
+<figure class="scanner">
+  <button class="gantry" type="button" aria-label="Replay the scan animation">
+    <Img src={src} alt={alt} width={640} loading="eager" class="portrait" />
+    <canvas aria-hidden="true"></canvas>
+  </button>
+  <figcaption class="readout" aria-hidden="true">&nbsp;</figcaption>
+</figure>
+<script is:inline>
+  // Hide the portrait before first paint so the scan can reveal it. If the scan script never
+  // starts (blocked, old browser), show the portrait anyway.
+  (() => {
+    const fig = document.currentScript.previousElementSibling;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    fig.classList.add('scanning');
+    setTimeout(() => { if (!fig.dataset.started) fig.classList.remove('scanning'); }, 2500);
+  })();
+</script>
+
+<script>
+  const CRYSTALS = 72; // must match the CSS ring: 360° / 5° per crystal
+  const RING_IN = 0.445; // ring and field-of-view radii, as fractions of the gantry width
+  const RING_OUT = 0.48;
+  const FOV = 0.38;
+  const ACQUIRE_MS = 4200;
+  const PEAK = 0.55; // fraction of the scan where the event rate peaks
+  const CLEAR_MS = 900;
+  const GRID = 80; // resolution of the activity map sampled from the portrait
+
+  // Lines per frame at scan progress p (0–1): rises exponentially to about 70 at the peak, then
+  // eases smoothly back down to nothing (half a cosine) as the image settles.
+  const rateAt = (p: number) => p < PEAK
+    ? 1.5 * Math.exp((p / PEAK) * Math.log(47))
+    : 70 * 0.5 * (1 + Math.cos((Math.PI * (p - PEAK)) / (1 - PEAK)));
+
+  // Fraction of the scan's total counts collected by progress p (the integral of rateAt).
+  const STEPS = 1000;
+  const cumulative = new Float32Array(STEPS + 1);
+  for (let i = 1; i <= STEPS; i++) cumulative[i] = cumulative[i - 1] + rateAt((i - 0.5) / STEPS);
+  const countsSoFar = (p: number) => cumulative[Math.round(p * STEPS)] / cumulative[STEPS];
+
+  const fig = document.querySelector<HTMLElement>('.scanner');
+  if (fig && !matchMedia('(prefers-reduced-motion: reduce)').matches) setup(fig);
+
+  function setup(fig: HTMLElement) {
+    const gantry = fig.querySelector<HTMLButtonElement>('.gantry')!;
+    const canvas = fig.querySelector('canvas')!;
+    const img = fig.querySelector('img');
+    const readout = fig.querySelector<HTMLElement>('.readout')!;
+    const ctx = canvas.getContext('2d');
+    if (!ctx || !img) { fig.classList.remove('scanning'); return; }
+    fig.dataset.started = '1';
+
+    let size = 0, dpr = 1;
+    const resize = () => {
+      size = gantry.clientWidth;
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = canvas.height = Math.round(size * dpr);
+    };
+    new ResizeObserver(resize).observe(gantry);
+    resize();
+
+    // Activity map: portrait brightness inside the circular field of view, cropped the same way
+    // the CSS shows it (object-fit: cover, object-position 50% 30%).
+    let cdf = new Float32Array(0);
+    const buildActivity = () => {
+      const off = document.createElement('canvas');
+      off.width = off.height = GRID;
+      const o = off.getContext('2d', { willReadFrequently: true })!;
+      const s = Math.max(GRID / img.naturalWidth, GRID / img.naturalHeight);
+      const w = img.naturalWidth * s, h = img.naturalHeight * s;
+      o.drawImage(img, (GRID - w) * 0.5, (GRID - h) * 0.3, w, h);
+      const px = o.getImageData(0, 0, GRID, GRID).data;
+      cdf = new Float32Array(GRID * GRID);
+      let sum = 0;
+      for (let i = 0; i < GRID * GRID; i++) {
+        const x = (i % GRID) + 0.5 - GRID / 2, y = Math.floor(i / GRID) + 0.5 - GRID / 2;
+        const inside = x * x + y * y < (GRID / 2) ** 2;
+        const lum = (0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]) / 255;
+        sum += inside ? 0.02 + lum * lum : 0;
+        cdf[i] = sum;
+      }
+    };
+
+    // Pick an emission point weighted by activity, in canvas pixels.
+    const emit = () => {
+      const r = Math.random() * cdf[cdf.length - 1];
+      let lo = 0, hi = cdf.length - 1;
+      while (lo < hi) { const mid = (lo + hi) >> 1; if (cdf[mid] < r) lo = mid + 1; else hi = mid; }
+      const cell = (2 * FOV * size) / GRID;
+      const x0 = size / 2 - FOV * size;
+      return [x0 + ((lo % GRID) + Math.random()) * cell, x0 + (Math.floor(lo / GRID) + Math.random()) * cell];
+    };
+
+    let lineAlpha = 0.32;
+    const flash = new Float32Array(CRYSTALS);
+    const crystalAt = (x: number, y: number) => {
+      const deg = (Math.atan2(y - size / 2, x - size / 2) * 180) / Math.PI + 90; // 0° = top, clockwise
+      return Math.floor((((deg % 360) + 360) % 360) / (360 / CRYSTALS));
+    };
+
+    // One coincidence: a random line through the emission point, ending on the ring.
+    const drawEvent = () => {
+      const [px, py] = emit();
+      const th = Math.random() * Math.PI;
+      const dx = Math.cos(th), dy = Math.sin(th);
+      const cx = px - size / 2, cy = py - size / 2;
+      const b = cx * dx + cy * dy;
+      const disc = Math.sqrt(b * b - (cx * cx + cy * cy - (RING_IN * size) ** 2));
+      const ax = px + (-b - disc) * dx, ay = py + (-b - disc) * dy;
+      const bx = px + (-b + disc) * dx, by = py + (-b + disc) * dy;
+      ctx.strokeStyle = `hsla(${(th * 360) / Math.PI}, 100%, 64%, ${lineAlpha})`;
+      ctx.beginPath(); ctx.moveTo(ax * dpr, ay * dpr); ctx.lineTo(bx * dpr, by * dpr); ctx.stroke();
+      flash[crystalAt(ax, ay)] = 1;
+      flash[crystalAt(bx, by)] = 1;
+    };
+
+    const drawFlashes = () => {
+      const r = ((RING_IN + RING_OUT) / 2) * size * dpr;
+      ctx.lineWidth = (RING_OUT - RING_IN) * size * dpr * 0.9;
+      const step = (Math.PI * 2) / CRYSTALS;
+      for (let i = 0; i < CRYSTALS; i++) {
+        if (flash[i] < 0.03) continue;
+        ctx.strokeStyle = `rgba(190, 240, 255, ${flash[i] * 0.85})`;
+        ctx.beginPath(); ctx.arc(size / 2 * dpr, size / 2 * dpr, r, i * step - Math.PI / 2, i * step + step * 0.7 - Math.PI / 2); ctx.stroke();
+        flash[i] *= 0.82;
+      }
+    };
+
+    let running = false;
+    const run = () => {
+      if (running || !cdf.length) return;
+      running = true;
+      fig.classList.add('scanning');
+      fig.style.setProperty('--recon', '0');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let counts = 0, start = 0;
+
+      const tick = (now: number) => {
+        start ||= now;
+        const t = now - start;
+        const p = Math.min(t / ACQUIRE_MS, 1);
+        // 0 until the peak, then 0 → 1: the image takes over from the raw lines.
+        const handover = Math.max(0, (p - PEAK) / (1 - PEAK));
+
+        // Let older lines fade so the newest stand out and the screen never saturates.
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fillStyle = `rgba(0, 0, 0, ${p < 1 ? 0.05 + 0.05 * handover : 0.16})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = 'lighter';
+
+        if (p < 1) {
+          // Random rounding, so the last few lines trickle out instead of stopping abruptly.
+          const n = Math.floor(rateAt(p) + Math.random());
+          // Lines also dim a little as the image takes over, so the face isn't buried in white.
+          lineAlpha = 0.3 * (1 - 0.4 * handover);
+          ctx.lineWidth = 0.9 * dpr;
+          for (let i = 0; i < n; i++) drawEvent();
+          counts += n;
+          const iteration = Math.min(4, 1 + Math.floor(p * 4));
+          readout.textContent = p < 0.45
+            ? `acquiring · ${counts.toLocaleString()} coincidences`
+            : `reconstructing · OSEM iteration ${iteration}/4`;
+        }
+        drawFlashes();
+        // The portrait sharpens in proportion to the counts collected so far, like a real scan:
+        // fast while the rate climbs, then slowly finishing as the last lines trickle in.
+        fig.style.setProperty('--recon', String(countsSoFar(p)));
+
+        if (t < ACQUIRE_MS + CLEAR_MS) return requestAnimationFrame(frame);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        fig.classList.remove('scanning');
+        readout.textContent = `${counts.toLocaleString()} coincidences · tap to rescan`;
+        running = false;
+      };
+      // If anything goes wrong mid-scan, show the portrait rather than leave it hidden.
+      const frame = (now: number) => {
+        try { tick(now); } catch (err) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          fig.classList.remove('scanning');
+          running = false;
+          console.error(err);
+        }
+      };
+      requestAnimationFrame(frame);
+    };
+
+    gantry.addEventListener('click', run);
+    const ready = () => { buildActivity(); run(); };
+    if (img.complete && img.naturalWidth) ready();
+    else img.addEventListener('load', ready, { once: true });
+  }
+</script>
+
+<style>
+  .scanner { margin: 0; display: grid; gap: 0.7rem; justify-items: center; }
+  .gantry {
+    position: relative; display: block; width: 100%; aspect-ratio: 1; padding: 0; border: 0;
+    border-radius: 50%; cursor: pointer; overflow: hidden;
+    background: radial-gradient(circle closest-side, #121c27 0 76%, #0a1018 77% 100%);
+    box-shadow: var(--shadow), inset 0 0 0 1px rgb(255 255 255 / 0.04);
+  }
+  .gantry:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+  /* Detector ring: 72 crystals (5° pitch) between 0.445 and 0.48 of the width. Matches the script. */
+  .gantry::before {
+    content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+    background: repeating-conic-gradient(rgb(120 165 200 / 0.2) 0 3.5deg, transparent 3.5deg 5deg);
+    mask: radial-gradient(circle closest-side, transparent 89%, #000 89.5% 96%, transparent 96.5%);
+  }
+  .gantry :global(.portrait) {
+    position: absolute; inset: 12%; width: 76%; height: 76%; border-radius: 50%;
+    object-fit: cover; object-position: 50% 30%;
+  }
+  .scanning .gantry :global(.portrait) {
+    opacity: var(--recon, 0);
+    filter: blur(calc((1 - var(--recon, 0)) * 14px)) saturate(var(--recon, 0));
+  }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .readout {
+    font: 500 0.75rem/1 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    letter-spacing: 0.02em; color: var(--muted); min-height: 1em; text-align: center;
+  }
+</style>

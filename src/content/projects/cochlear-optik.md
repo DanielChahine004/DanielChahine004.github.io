@@ -25,17 +25,17 @@ gallery:
   - 56298d_cffce6aa03e449968cf979270399f90f~mv2.png
 ---
 
-In winter 2023 I completed a 12-week engineering internship at OPTIK Engineering Consultancy. With Anish Chauhan, Adrian Kumar and Jacob Bayne, I delivered a project for Cochlear: an original quality-control device that identifies mislabelled or mis-manufactured implant components from their magnetic field.
+In winter 2023, I completed a 12-week engineering internship at OPTIK Engineering Consultancy. With teammates Anish Chauhan, Adrian Kumar and Jacob Bayne, I delivered a project for Cochlear: an original quality-control device that identifies mislabelled or mis-manufactured implant components from their magnetic fields.
 
 We worked with client representatives Patrick Sorsby (Director of Process Technology) and Gabriel Wainmann (Principal Engineer, Robotics), under the mentorship of Osman Mah, Wai Sum Peter Hau and Christopher Wilson.
 
 ## Mechanical design and manufacturing
 
-The clean-room-compliant enclosure was modelled in Fusion 360, with technical drawings to guide fabrication. Manufacturing was handled by Ti2 Pty Ltd.
+The clean-room-compliant enclosure was modelled in Fusion 360, and technical drawings were produced to guide its fabrication by Ti2 Pty Ltd.
 
 ## Software
 
-Built in Python, the system included:
+The system was built in Python and included:
 
 - A random forest classifier distinguishing magnet types from MagCam MagScope scan data
 - Optical character recognition (OCR) for label verification

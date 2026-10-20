@@ -38,10 +38,12 @@ export const site = {
     'Embedded & PCB design',
   ],
 
+  // Shown at the top of the Education box (both degrees are from UTS).
+  educationLogo: { src: '/logos/uts.svg', alt: 'University of Technology Sydney' },
   education: [
     { title: 'PhD, Biomedical Engineering', org: 'University of Technology Sydney', period: '2026 – present' },
     {
-      title: 'Bachelor of Engineering (Honours), Biomedical',
+      title: 'Bachelor of Engineering (Honours), Biomedical Engineering',
       org: 'University of Technology Sydney',
       period: 'Completed 2026',
       note: 'First Class Honours · Dean’s List',

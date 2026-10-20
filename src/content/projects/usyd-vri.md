@@ -1,5 +1,5 @@
 ---
-title: "Brain-state forecasting & EEG analysis \u2014 USYD Vacation Research Scholarships"
+title: "Brain-state forecasting and EEG analysis \u2014 USYD Vacation Research Scholarships"
 summary: "Built a novel 4D Swin Transformer U-Net to forecast resting-state fMRI (published in IEEE JBHI), then an EEG preprocessing pipeline for sleep-spindle segmentation."
 org: "University of Sydney \u00b7 Brain and Mind Centre"
 period: "2024 \u2013 2025"
@@ -36,32 +36,32 @@ gallery:
 
 *Summer 2024–25 · $4,000 AUD scholarship*
 
-I joined researchers at the Brain and Mind Centre to improve an autoencoder-style model that forecasts 4D resting-state fMRI brain states, supervised by Yifei Sun and Prof Jinglei Lv. The model takes 32 consecutive 3D fMRI volumes (23 seconds of scan) and predicts the next 10 (7.2 seconds).
+Supervised by Yifei Sun and Prof Jinglei Lv at the Brain and Mind Centre, I helped improve an autoencoder-style model that forecasts resting-state brain activity from 4D fMRI. It takes 32 consecutive fMRI volumes (23 seconds of scan) and predicts the next 10 (7.2 seconds).
 
 **Outcome**
 
-- Coded a novel 4D Swin Transformer U-Net. The published model predicts the next 10 brain states with a masked MSE of 0.035 and an SSIM of 0.954 on held-out test subjects.
+- Developed a novel 4D Swin Transformer U-Net; the published model predicts the next 10 brain states with a masked MSE of 0.035 and an SSIM of 0.954 on held-out test subjects.
 - Improved performance through skip connections, refined patching and autoencoder optimisations.
-- Trained using USYD's Research Data Store and the Brain and Mind Centre's NVIDIA DGX server (4× V100).
-- Led weekly research discussions; second author on the resulting publication.
+- Trained models on the Brain and Mind Centre's NVIDIA DGX server (4× V100), with data on USYD's Research Data Store.
+- Led weekly research discussions and became second author on the resulting publication.
 
-## Project 1 extension
+## Project 1 extension — longer, more stable forecasts
 
-*Autumn 2025 · $1,500 AUD*
+*Autumn 2025 · $1,500 AUD scholarship extension*
 
-- Extended the training pipeline with new preprocessing and autoregressive prediction methods, improving forecast stability from 10 to as many as 200 frames.
+- Added new preprocessing and autoregressive prediction methods to the training pipeline, extending stable forecasts from 10 to as many as 200 frames.
 - Implemented a combined SSIM and masked-MSE loss, cutting loss by a further 50%.
-- Validated all models and prediction configurations for publication on remote Linux HPC clusters (DGX, 4× A100).
-- The preprint was posted to arXiv, accepted to a special issue of **IEEE JBHI** and presented at **IEEE BHI 2025**.
+- Validated every model and prediction configuration for the publication on remote Linux HPC clusters (DGX, 4× A100).
+- The paper was posted to arXiv, accepted to a special issue of **IEEE JBHI** and presented at **IEEE BHI 2025**.
 
 ## Project 2 — EEG preprocessing for sleep-spindle segmentation
 
-*Winter 2025 · $3,000 AUD*
+*Winter 2025 · $3,000 AUD scholarship*
 
-With Prof Wei Chen, Dr Jia Liu and Dr Shawn Dexiao Kong, I built a robust EEG preprocessing pipeline to support AI-based sleep-spindle segmentation. Spindles are subtle 11–16 Hz oscillations lasting about half a second to two seconds across multiple channels, so the class imbalance is extreme (<0.5% positive) over recordings up to 10 hours long.
+With Prof Wei Chen, Dr Jia Liu and Dr Shawn Dexiao Kong, I built a robust EEG preprocessing pipeline to support AI-based sleep-spindle segmentation. Spindles are brief, subtle 11–16 Hz oscillations (about 0.5–2 seconds) that appear across multiple channels. In recordings up to 10 hours long they make up less than 0.5% of the signal, so the classes are extremely imbalanced.
 
 **Outcome**
 
 - Adapted state-of-the-art preprocessing from the literature, using wavelet-transform frequency-domain features to improve spindle localisation.
-- Reached up to 96% segmentation overlap via thresholding.
-- Built preliminary Swin Transformer and convolutional U-Net models for downstream segmentation, then handed the pipeline over to the lab.
+- Achieved up to 96% segmentation overlap with the ground truth using thresholding.
+- Built preliminary Swin Transformer and convolutional U-Net models for downstream segmentation before handing the pipeline over to the lab.

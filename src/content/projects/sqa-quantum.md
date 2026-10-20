@@ -35,13 +35,13 @@ gallery:
   - 56298d_5c0ea168f2a84d4c974e86583072e5ee~mv2.png
 ---
 
-Over summer 2024 I worked with Dr Maja Cassidy and her team at UNSW Kensington towards an electron-on-neon quantum computer, on a $3,333 AUD scholarship from the Sydney Quantum Academy. I took on mechanical redesign, electromagnetic simulation, liaison with manufacturers, PCB designers and machinists, and software for driving quantum instruments.
+Over summer 2024, on a $3,333 AUD scholarship from the Sydney Quantum Academy, I worked with Dr Maja Cassidy and her team at UNSW Kensington on building an electron-on-neon quantum computer. My work spanned mechanical redesign, electromagnetic simulation and software for driving quantum instruments, as well as liaising with manufacturers, PCB designers and machinists.
 
 ## Mechanical redesign of the housing
 
-Using Fusion 360, I redesigned the quantum computer housing for spatial efficiency, modularity and function:
+Using Fusion 360, I redesigned the quantum computer housing for compactness, modularity and functionality:
 
-- Reduced seal count from 20+ to 4, simplifying assembly and removing failure points.
+- Reduced the seal count from 20+ to 4, simplifying assembly and removing potential points of failure.
 - Sourced multiaxial cables from suppliers, expanding signal-carrying capacity by over 25%.
 - Improved modularity for future upgrades and repairs.
 - Designed the new quantum and electron-deposition PCBs the redesign required.
@@ -53,7 +53,7 @@ Using Fusion 360, I redesigned the quantum computer housing for spatial efficien
 
 ## Instrument control and data modelling
 
-I wrote Python for instrument interfacing, signal processing and analysis, including scripted voltage control and device configuration for mock qubit testing.
+I wrote Python code for instrument interfacing, signal processing and analysis, including scripted voltage control and device configuration for mock qubit testing.
 
 - Interfaced with a Zurich Instruments UHFLI lock-in amplifier via QCoDeS, LabOne and LabOne Q.
 - Used Quantum Machines QDAC-II and QBox to generate arbitrary waveforms and simulate qubit interactions.
