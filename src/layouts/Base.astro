@@ -71,13 +71,13 @@ const nav = [
         // Drop the classes afterwards so the cards' own hover/tap motion works normally.
         target.addEventListener('animationend', () => target.classList.remove('reveal', 'in'), { once: true });
       }
-    }, { rootMargin: '0px 0px -8% 0px' });
+    }, { rootMargin: '0px 0px 10% 0px' });
 
     for (const el of document.querySelectorAll<HTMLElement>('.card, .pubs li, .facts, .gallery > *, .feature-video')) {
       if (el.getBoundingClientRect().top < innerHeight) continue;
       // Stagger items that sit side by side in a row.
       const i = el.parentElement ? [...el.parentElement.children].indexOf(el) : 0;
-      el.style.setProperty('--reveal-delay', `${(i % 3) * 80}ms`);
+      el.style.setProperty('--reveal-delay', `${(i % 3) * 40}ms`);
       el.classList.add('reveal');
       seen.observe(el);
     }

@@ -80,6 +80,6 @@ p { margin: 0 0 1em; text-wrap: pretty; }
 .prose em { color: var(--muted); }
 
 /* Scroll reveal (script in Base.astro): content fades up as it enters the screen. */
-@keyframes reveal-rise { from { opacity: 0; transform: translateY(16px); } }
+@keyframes reveal-rise { from { opacity: 0; transform: translateY(8px); } }
 .reveal { opacity: 0; }
-.reveal.in { animation: reveal-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-delay, 0ms) both; }
+.reveal.in { animation: reveal-rise 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-delay, 0ms) both; }
