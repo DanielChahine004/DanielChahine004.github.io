@@ -12,6 +12,7 @@ export const site = {
   location: 'Sydney, Australia',
   email: 'daniel.chahine004@gmail.com',
   resume: '/resume.pdf',
+  resumeFilename: 'Daniel-Chahine-CV.pdf', // the name the Download CV button saves it as
 
   // Leave a link as '' to hide it.
   links: {

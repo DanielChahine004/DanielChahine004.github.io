@@ -18,7 +18,7 @@ const others = projects.filter((p) => !p.data.featured).slice(0, 6);
       <h1>Hey, I’m Daniel.</h1>
       <p class="lede">{site.intro}</p>
       <div class="cta">
-        <a class="btn primary" href={site.resume} target="_blank" rel="noopener"><Icon name="download" />Download CV</a>
+        <a class="btn primary" href={site.resume} download={site.resumeFilename}><Icon name="download" />Download CV</a>
         <a class="btn" href="/projects"><Icon name="grid" />View projects</a>
       </div>
       <Links />
