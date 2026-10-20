@@ -1,0 +1,33 @@
+---
+// Renders a video from public/videos/ (e.g. src="56298d_<id>.mp4").
+// By default it plays muted on hover where there's a mouse (hovering its card, if it's in one); tap/click to play elsewhere.
+// The poster is the matching Wix frame grab (<id>f000.jpg … f003.jpg) in src/assets/wix, if present.
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: string; class?: string; width?: number;
+  controls?: boolean;
+  // false: a normal player with sound (e.g. in the theatre view), not a muted hover preview.
+  hover?: boolean;
+}
+const { src, class: cls, width = 900, controls = true, hover = true } = Astro.props;
+
+const id = src.replace(/\.mp4$/, '');
+const all = import.meta.glob<{ default: ImageMetadata }>('/src/assets/wix/*.jpg', { eager: true });
+const frame = Object.entries(all).filter(([p]) => p.includes('/' + id + 'f00')).sort(([a], [b]) => b.localeCompare(a))[0]?.[1].default;
+const poster = frame ? (await getImage({ src: frame, width: Math.min(width, frame.width), format: 'webp' })).src : undefined;
+---
+<video class={cls} src={`/videos/${src}`} poster={poster} controls={controls} preload="none" playsinline muted={hover} loop={hover} data-hover-play={hover ? '' : undefined}></video>
+
+<script>
+  // Only where hovering is possible, and not for people who asked for reduced motion.
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    for (const video of document.querySelectorAll<HTMLVideoElement>('video[data-hover-play]')) {
+      const target = video.closest('.card') ?? video;
+      target.addEventListener('pointerenter', () => { video.play().catch(() => {}); });
+      // Someone who turned the sound on is watching it properly, so leave it playing.
+      target.addEventListener('pointerleave', () => { if (video.muted) video.pause(); });
+    }
+  }
+</script>

@@ -1,0 +1,118 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Img from './Img.astro';
+import Video from './Video.astro';
+
+interface Props { project: CollectionEntry<'projects'>; size?: 'large' | 'small'; }
+const { project, size = 'small' } = Astro.props;
+const d = project.data;
+const href = d.featured ? `/projects/${project.id}` : d.href;
+const Tag = href ? 'a' : 'article';
+const width = size === 'large' ? 900 : 600;
+// Card videos are hover previews with no controls, so they also work inside a linked card.
+// (A linked card can't hold its own links, so those show on the project page instead.)
+const playable = d.video;
+// Cards without a page open their photo or video full screen ("theatre") instead.
+const theatre = !href && (d.video || d.cover);
+---
+<Tag class:list={['card', size, { theatre }]} href={href}>
+  <div class="media">{playable ? <Video src={d.video!} width={width} controls={false} /> : <Img src={d.cover} alt="" width={width} />}</div>
+  <div class="body">
+    <p class="meta">{d.category}{d.period && ` · ${d.period}`}</p>
+    <h3>{d.title}</h3>
+    {d.org && <p class="org">{d.org}</p>}
+    <p class="summary">{d.summary}</p>
+    {d.tags.length > 0 && <ul class="chips">{d.tags.map((t) => <li class="chip">{t}</li>)}</ul>}
+    {!href && d.links.length > 0 && (
+      <p class="links">{d.links.map((l) => <a href={l.url} target="_blank" rel="noopener">{l.label} ↗</a>)}</p>
+    )}
+    {href && <span class="more">Read more →</span>}
+  </div>
+  {theatre && (
+    <>
+      <button class="open" type="button" aria-label={`View ${d.title} full screen`}></button>
+      <dialog class="theatre-panel" aria-label={d.title}>
+        <button class="close" type="button" aria-label="Close">✕</button>
+        <figure>
+          {d.video ? <Video src={d.video} width={1600} hover={false} /> : <Img src={d.cover} alt={d.title} width={2000} />}
+          <figcaption>{d.title}</figcaption>
+        </figure>
+      </dialog>
+    </>
+  )}
+</Tag>
+
+<script>
+  for (const card of document.querySelectorAll<HTMLElement>('.card.theatre')) {
+    const dialog = card.querySelector('dialog')!;
+    const video = dialog.querySelector('video');
+    // Try with sound first. If the browser refuses (autoplay rules) or can't output audio
+    // (no audio device), play muted instead; the controls can unmute it.
+    const playMuted = () => {
+      if (!video || video.muted) return;
+      video.muted = true;
+      if (video.error) video.load();
+      video.play().catch(() => {});
+    };
+    video?.addEventListener('error', () => { if (dialog.open) playMuted(); });
+    card.querySelector('.open')!.addEventListener('click', () => {
+      card.querySelector<HTMLVideoElement>('.media video')?.pause();
+      dialog.showModal();
+      video?.play().catch((e) => { if (e.name === 'NotAllowedError') playMuted(); });
+    });
+    // Close on the ✕, or on a click anywhere outside the photo/video itself.
+    dialog.addEventListener('click', (e) => {
+      const t = e.target as Element;
+      if (t.closest('.close') || !t.closest('img, video')) dialog.close();
+    });
+    dialog.addEventListener('close', () => video?.pause());
+  }
+</script>
+
+<style>
+  .card {
+    position: relative;
+    display: flex; flex-direction: column;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; color: inherit; text-decoration: none; height: 100%;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  }
+  a.card:hover, .card.theatre:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+  .media { aspect-ratio: 16 / 10; overflow: hidden; background: var(--line); }
+  .media :global(img), .media :global(.img-ph) { width: 100%; height: 100%; object-fit: cover; aspect-ratio: auto; }
+  .media :global(video) { display: block; width: 100%; height: 100%; object-fit: contain; background: #000; }
+  .body { padding: 1.2rem 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+  .meta { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0; }
+  h3 { margin: 0; font-size: 1.12rem; }
+  .large h3 { font-size: 1.35rem; }
+  .org { margin: 0; font-size: 0.88rem; color: var(--muted); font-weight: 500; }
+  .summary { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  .chips { margin-top: auto; padding-top: 0.4rem; }
+  .links { margin: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; font-size: 0.92rem; font-weight: 600; }
+  .more { font-weight: 600; font-size: 0.92rem; color: var(--accent); }
+
+  /* The whole card is one big button; document links sit above it so they still work. */
+  .open { position: absolute; inset: 0; border: 0; padding: 0; background: none; cursor: pointer; border-radius: inherit; }
+  .open:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+  .links a { position: relative; z-index: 1; }
+
+  .theatre-panel {
+    width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0;
+    padding: clamp(16px, 4vw, 48px); border: 0; background: transparent; color: #fff;
+  }
+  .theatre-panel[open] { display: grid; place-items: center; }
+  .theatre-panel::backdrop { background: rgb(0 0 0 / 0.9); }
+  figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; max-width: 100%; max-height: 100%; }
+  figure :global(img), figure :global(video) {
+    display: block; max-width: 100%; max-height: calc(100dvh - 9rem); width: auto; height: auto;
+    border-radius: 8px; background: #000;
+  }
+  figcaption { font-size: 0.95rem; text-align: center; color: rgb(255 255 255 / 0.85); max-width: 70ch; }
+  .close {
+    position: fixed; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 50%;
+    border: 0; background: rgb(255 255 255 / 0.15); color: #fff; font-size: 1.2rem; cursor: pointer;
+  }
+  .close:hover, .close:focus-visible { background: rgb(255 255 255 / 0.3); }
+
+  :global(html:has(dialog[open])) { overflow: hidden; }
+</style>

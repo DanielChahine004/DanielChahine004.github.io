@@ -1,0 +1,86 @@
+---
+import '../styles/global.css';
+import { site } from '../data/site';
+import Links from '../components/Links.astro';
+
+interface Props { title?: string; description?: string; }
+const { title, description = site.description } = Astro.props;
+const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.role}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const path = Astro.url.pathname;
+const nav = [
+  { href: '/projects', label: 'Projects' },
+  { href: '/#publications', label: 'Publications' },
+  { href: '/#about', label: 'About' },
+  { href: '/#contact', label: 'Contact' },
+];
+---
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap bar">
+        <a class="brand" href="/">{site.name}</a>
+        <nav aria-label="Main">
+          {nav.map((n) => (
+            <a href={n.href} aria-current={path.startsWith(n.href) && n.href !== '/' ? 'page' : undefined}>{n.label}</a>
+          ))}
+        </nav>
+      </div>
+    </header>
+    <main id="main"><slot /></main>
+    <footer class="site-footer" id="contact">
+      <div class="wrap foot">
+        <div>
+          <p class="eyebrow">Get in touch</p>
+          <h2>Let’s talk research, engineering or collaboration.</h2>
+          <p><a class="mail" href={`mailto:${site.email}`}>{site.email}</a></p>
+        </div>
+        <div class="foot-side">
+          <Links />
+          <p class="muted small">© {new Date().getFullYear()} {site.name} · {site.location}</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .skip { position: absolute; left: -999px; }
+  .skip:focus { left: 1rem; top: 1rem; z-index: 10; background: var(--surface); padding: 0.5rem 1rem; }
+  .site-header {
+    position: sticky; top: 0; z-index: 5;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 64px; }
+  .brand { font: 600 1.15rem/1 var(--serif); color: var(--ink); text-decoration: none; white-space: nowrap; }
+  nav { display: flex; gap: clamp(0.8rem, 2.5vw, 1.8rem); overflow-x: auto; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; white-space: nowrap; }
+  nav a:hover, nav a[aria-current='page'] { color: var(--ink); }
+  @media (max-width: 560px) {
+    .bar { height: auto; padding-block: 0.8rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  }
+  .site-footer { background: var(--surface); border-top: 1px solid var(--line); padding-block: 4rem 2.5rem; }
+  .foot { display: grid; grid-template-columns: 1.4fr 1fr; gap: 2rem; align-items: end; }
+  .foot h2 { max-width: 22ch; }
+  .mail { font-size: 1.15rem; font-weight: 600; }
+  .foot-side { display: grid; gap: 1.2rem; justify-items: start; }
+  .small { font-size: 0.85rem; margin: 0; }
+  @media (max-width: 760px) { .foot { grid-template-columns: 1fr; } }
+</style>

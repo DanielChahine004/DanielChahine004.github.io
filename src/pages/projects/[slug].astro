@@ -1,0 +1,58 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Img from '../../components/Img.astro';
+import Video from '../../components/Video.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects', (p) => p.data.featured);
+  return projects.map((p) => ({ params: { slug: p.id }, props: { project: p } }));
+}
+const { project } = Astro.props;
+const d = project.data;
+const { Content } = await render(project);
+---
+<Base title={d.title} description={d.summary}>
+  <article class="section">
+    <div class="wrap">
+      <a class="back" href="/projects">← All projects</a>
+      <header class="head">
+        {d.logos.length > 0 && <div class="logos">{d.logos.map((l) => <Img src={l} alt="" width={240} loading="eager" />)}</div>}
+        <p class="eyebrow">{d.category}{d.period && ` · ${d.period}`}</p>
+        <h1>{d.title}</h1>
+        {d.org && <p class="org">{d.org}</p>}
+        <p class="lede">{d.summary}</p>
+        <ul class="chips">{d.tags.map((t) => <li class="chip">{t}</li>)}</ul>
+        {d.links.length > 0 && (
+          <div class="links">{d.links.map((l) => <a class="btn" href={l.url} target="_blank" rel="noopener">{l.label} ↗</a>)}</div>
+        )}
+      </header>
+      {d.video && <Video src={d.video} class="feature-video" width={1200} />}
+      <div class="prose"><Content /></div>
+      {d.gallery.length > 0 && (
+        <section class="gallery-wrap">
+          <h2>Gallery</h2>
+          <div class="gallery">{d.gallery.map((g) => (g.endsWith('.mp4') ? <Video src={g} /> : <Img src={g} alt="" width={900} />))}</div>
+        </section>
+      )}
+    </div>
+  </article>
+</Base>
+
+<style>
+  .back { display: inline-block; margin-bottom: 2rem; font-weight: 500; text-decoration: none; }
+  .head { max-width: 75ch; margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--line); }
+  h1 { font-size: clamp(2rem, 4vw, 2.8rem); }
+  .org { font-weight: 600; color: var(--muted); margin-bottom: 1rem; }
+  .lede { font-size: 1.2rem; color: var(--muted); }
+  .links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.2rem; }
+  .gallery-wrap { margin-top: 3.5rem; }
+  .gallery { columns: 3 260px; column-gap: 1rem; }
+  .logos { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem; margin-bottom: 1.5rem; }
+  .logos :global(img) { height: 56px; width: auto; object-fit: contain; }
+  :global(.feature-video) { display: block; width: 100%; max-height: 80vh; margin-bottom: 2.5rem; border-radius: 10px; background: #000; }
+  .gallery :global(video) { display: block; width: 100%; margin-bottom: 1rem; border-radius: 10px; background: #000; break-inside: avoid; }
+  .gallery :global(img), .gallery :global(.img-ph) {
+    width: 100%; margin-bottom: 1rem; border-radius: 10px; border: 1px solid var(--line); break-inside: avoid; background: #fff;
+  }
+</style>

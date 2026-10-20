@@ -1,0 +1,664 @@
+#include <windows.h>
+#include <chrono>
+#include <thread>
+#include <iostream>
+#include <vector>
+#include <gdiplus.h>
+#include <array>
+#include <random>
+#include <algorithm>
+#include <utility>
+#include <set>
+#include <list>
+#include <stdexcept>
+
+#pragma comment(lib, "gdiplus.lib")
+
+using namespace Gdiplus;
+using namespace std;
+
+// Window dimensions
+const int WINDOW_WIDTH = 1800;
+const int WINDOW_HEIGHT = 800;
+const int BOTTOM_BUFFER = 40;
+const double GRID_LENGTH = 50;
+
+const double TIME_MULTIPLIER = 10;
+const double ACC_GRAVITY = -90;
+const double FLOOR_DAMPENING = 0.; // 0-1
+const double MAX_SPEED = 300;
+
+const double FIELD_CONSTANT = 7;
+const double MAX_REPULSION_FORCE = abs(FIELD_CONSTANT);
+const double FIELD_RADIUS_MULTIPLE = 5; // Uses this, unless its zero
+const double ELASTICITY_CONSTANT = 0.9; //0-1
+
+// Refresh rate in seconds
+// const double REFRESH_TIME = 1.0 / 60.0; // 60 FPS
+const double REFRESH_TIME = 1.0 / 120.0;
+const double DT = REFRESH_TIME * TIME_MULTIPLIER;
+const double PI = 3.14159265358979323846;
+
+// Struct prototypes
+struct Vector;
+struct Circle;
+struct Ball;
+
+vector<Circle> circles;
+vector<Ball> balls;
+
+// Global variables
+HWND hwnd;
+GdiplusStartupInput gdiplusStartupInput;
+ULONG_PTR gdiplusToken;
+HDC backBufferDC;
+HBITMAP backBufferBitmap;
+HBITMAP oldBitmap;
+
+// Function prototypes
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+bool Initialize();
+void Update();
+void Render(HDC hdc);
+void draw_circle(Vector position, double radius, double mass, Vector velocity);
+void InitBackBuffer();
+void CleanupBackBuffer();
+int findBin(double value);
+Vector rotateVector(const Vector& vec, double angle);
+Vector calculateVector(int x1, int y1, int x2, int y2);
+double magnitude(const Vector& vec);
+Vector calculatePerpendicularVector(const Vector& vec);
+double dotProduct(const Vector& vec1, const Vector& vec2);
+Vector normalize(const Vector& vec);
+double getVectorAngle(const Vector& vec);
+Vector scaleVector(const Vector& v, double scalar);
+std::array<double, 2> elastic_collision_calc(double m1, double u1, double m2, double u2);
+void calculateCollision(Circle& circle, Circle& target, Vector& distance_vector, Vector& circle_velocity_vector, Vector& target_velocity_vector, Vector& centres_vector, Vector& tangent_vector);
+void applyFields(Circle& circle, Circle& target, Vector& centres_vector, Vector& distance_vector);
+void applyGravity(Circle& circle);
+void handleWallCollisions(Circle& circle);
+void applySpeedLimit(Circle& circle);
+void applyVelocities(Circle& circle);
+int getRandomNumber(int x, int y);
+void generateRandomBalls(int count);
+void draw_Ball(double x, double y, double radius, int numNodes, double numRadii, double nodeMass);
+
+int numBinsX = findBin(WINDOW_WIDTH + 1);
+int numBinsY = findBin(WINDOW_HEIGHT + 1);
+
+vector<vector<vector<Circle*>>> GRID(numBinsX, vector<vector<Circle*>>(numBinsY));
+
+// Define a structure to represent a 2D vector
+struct Vector {
+    double x;
+    double y;
+
+    // Constructor to initialize the vector
+    Vector(double x_val, double y_val) : x(x_val), y(y_val) {}
+
+    bool operator<(const Vector& other) const {
+        return std::tie(x, y) < std::tie(other.x, other.y);
+    }
+};
+
+// Circle struct
+struct Circle {
+    Vector position;
+    double radius;
+    double mass;
+    Vector velocity;
+    double field_radius;
+    pair<double, double> domain;
+    pair<double, double> range;
+    pair<double, double> field_domain;
+    pair<double, double> field_range;
+
+    Circle(Vector _position, double _radius, double _mass, Vector _velocity, double _field_radius)
+        : position(_position),
+          radius(_radius),
+          mass(_mass),
+          velocity(_velocity),
+          field_radius(_field_radius) {
+        field_domain.first = position.x - radius * FIELD_RADIUS_MULTIPLE;
+        field_domain.second = position.x + radius * FIELD_RADIUS_MULTIPLE;
+        field_range.first = position.y - radius * FIELD_RADIUS_MULTIPLE;
+        field_range.second = position.y + radius * FIELD_RADIUS_MULTIPLE;
+    }
+
+    bool operator<(const Circle& other) const {
+        return std::tie(position, radius, mass, velocity, field_radius, domain, range, field_domain, field_range) <
+               std::tie(other.position, other.radius, other.mass, other.velocity, other.field_radius, other.domain, other.range, other.field_domain, other.field_range);
+    }
+
+    void set_x(const double value) {
+        position.x = value;
+        domain.first = position.x - radius;
+        domain.second = position.x + radius;
+        field_domain.first = position.x - radius * FIELD_RADIUS_MULTIPLE;
+        field_domain.second = position.x + radius * FIELD_RADIUS_MULTIPLE;
+    }
+
+    void set_y(const double value) {
+        position.y = value; 
+        range.first = position.y - radius;
+        range.second = position.y + radius;
+        field_range.first = position.y - radius * FIELD_RADIUS_MULTIPLE;
+        field_range.second = position.y + radius * FIELD_RADIUS_MULTIPLE;
+    }
+
+    void set_x_velocity(const double value){
+        velocity.x = value;
+    }
+
+    void set_y_velocity(const double value){
+        velocity.y = value;
+    }
+};
+
+struct Ball {
+    Vector orientationVector;
+    Vector centre;
+    Vector velocity;
+    double radius;
+    int numNodes;
+    double nodeRadii;
+    double nodeMass;
+    double nodeFieldRadius;
+    list<Circle*> nodes;
+
+    Ball(Vector _centre, Vector _orientationVector, Vector _velocity, double _radius, int _numNodes, double _nodeRadii, double _nodeMass, double _nodeFieldRadius)
+        : centre(_centre),
+          orientationVector(normalize(_orientationVector)),
+          velocity(_velocity),
+          radius(_radius),
+          numNodes(_numNodes),
+          nodeRadii(_nodeRadii),
+          nodeMass(_nodeMass),
+          nodeFieldRadius(_nodeFieldRadius) 
+        {
+        Vector caster = scaleVector(orientationVector, radius);
+        double segmentAngle = 2 * PI /numNodes;
+
+        circles.reserve(circles.size() + numNodes);
+        
+        for (int i=0; i<numNodes; i++){
+            Vector cast = rotateVector(caster, segmentAngle * i);
+            Circle node = Circle(Vector(centre.x + cast.x, centre.y + cast.y), nodeRadii, nodeMass, Vector(velocity.x, velocity.y), nodeFieldRadius);
+            circles.emplace_back(Vector(centre.x + cast.x, centre.y + cast.y), nodeRadii, nodeMass, Vector(velocity.x, velocity.y), nodeFieldRadius);
+            nodes.push_back(&circles.back());
+        }
+    }
+};
+
+// Function to get element at index from list
+template <typename T>
+T getFrom(int index, const std::list<T>& myList) {
+    // Check if index is within bounds
+    if (index < 0 || index >= static_cast<int>(myList.size())) {
+        throw std::out_of_range("Index out of range");
+    }
+
+    // Iterate to the index using an iterator
+    auto it = myList.begin();
+    std::advance(it, index); // Move iterator 'it' to the index position
+
+    return *it; // Return the element at the index
+}
+
+int findBin(double value) {
+    // Perform the division and round up to the nearest integer
+    return static_cast<int>(std::ceil(value / GRID_LENGTH));
+}
+
+bool Initialize() {
+    // Initialize GDI+
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+    // Register the window class
+    const char CLASS_NAME[] = "Simple Window Class";
+    
+    WNDCLASS wc = {};
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.lpszClassName = CLASS_NAME;
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    
+    if (!RegisterClass(&wc)) {
+        return false;
+    }
+
+    // Create the window
+    hwnd = CreateWindowEx(
+        0,                          // Optional window styles
+        CLASS_NAME,                 // Window class
+        "Simple Window",            // Window text
+        WS_OVERLAPPEDWINDOW,        // Window style
+        
+        // Size and position
+        CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT,
+        
+        NULL,       // Parent window    
+        NULL,       // Menu
+        GetModuleHandle(NULL),  // Instance handle
+        NULL        // Additional application data
+    );
+
+    if (hwnd == NULL) {
+        return false;
+    }
+
+    ShowWindow(hwnd, SW_SHOW);
+
+    // Initialize the back buffer
+    InitBackBuffer();
+
+    return true;
+}
+
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        Render(backBufferDC);
+        BitBlt(hdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, backBufferDC, 0, 0, SRCCOPY);
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+    case WM_DESTROY:
+        CleanupBackBuffer();
+        PostQuitMessage(0);
+        return 0;
+    }
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+void InitBackBuffer() {
+    HDC hdc = GetDC(hwnd);
+    backBufferDC = CreateCompatibleDC(hdc);
+    backBufferBitmap = CreateCompatibleBitmap(hdc, WINDOW_WIDTH, WINDOW_HEIGHT);
+    oldBitmap = (HBITMAP)SelectObject(backBufferDC, backBufferBitmap);
+    ReleaseDC(hwnd, hdc);
+}
+
+void CleanupBackBuffer() {
+    SelectObject(backBufferDC, oldBitmap);
+    DeleteObject(backBufferBitmap);
+    DeleteDC(backBufferDC);
+}
+
+Vector rotateVector(const Vector& vec, double angle) {
+    double cosAngle = cos(angle);
+    double sinAngle = sin(angle);
+    return Vector{
+        vec.x * cosAngle + vec.y * sinAngle,
+        -vec.x * sinAngle + vec.y * cosAngle
+    };
+}
+
+// Function to calculate the distance using the Pythagorean theorem
+double magnitude(const Vector& vec) {
+    return sqrt(pow(vec.x, 2) + pow(vec.y, 2));
+}
+
+Vector calculatePerpendicularVector(const Vector& vec) {
+    // Returning a vector that is perpendicular to the input vector
+    return Vector(-vec.y, vec.x);
+}
+
+// Function to calculate the dot product of two vectors
+double dotProduct(const Vector& vec1, const Vector& vec2) {
+    return vec1.x * vec2.x + vec1.y * vec2.y;
+}
+
+// Function to normalize a vector
+Vector normalize(const Vector& vec) {
+    double mag = magnitude(vec);
+    return Vector(vec.x / mag, vec.y / mag);
+}
+
+// Function to return the angle of a vector from the origin
+double getVectorAngle(const Vector& vec){
+    return atan2(vec.y, vec.x);
+}
+
+// Function to scale a 2D vector by a scalar
+Vector scaleVector(const Vector& v, double scalar) {
+    return Vector(v.x * scalar, v.y * scalar);
+}
+
+array<double, 2> elastic_collision_calc(double m1, double u1, double m2, double u2) {
+    double v1 = ((m1 - m2) / (m1 + m2)) * u1 + ((2 * m2) / (m1 + m2)) * u2;
+    double v2 = ((2 * m1) / (m1 + m2)) * u1 + ((m2 - m1) / (m1 + m2)) * u2;
+    
+    return {v1, v2};
+}
+
+void calculateCollision(Circle& circle, Circle& target, Vector& distance_vector, Vector& circle_velocity_vector, Vector& target_velocity_vector, Vector& centres_vector, Vector& tangent_vector) {
+    double dp_circle_tang = dotProduct(circle_velocity_vector, tangent_vector);
+    double dp_target_tang = dotProduct(target_velocity_vector, tangent_vector);
+
+    double dp_circle_centres = dotProduct(circle_velocity_vector, centres_vector);
+    double dp_target_centres = dotProduct(target_velocity_vector, centres_vector);
+
+    array<double, 2> post_velocities_centres = elastic_collision_calc(circle.mass, dp_circle_centres, target.mass, dp_target_centres);
+
+    Vector circles_reflection_velocity_a = scaleVector(centres_vector , post_velocities_centres[0]);
+    Vector targets_reflection_velocity_a = scaleVector(centres_vector , post_velocities_centres[1]);
+
+    Vector circles_reflection_velocity_b = scaleVector(tangent_vector , dp_circle_tang);
+    Vector targets_reflection_velocity_b = scaleVector(tangent_vector , dp_target_tang);
+
+    Vector circles_reflection_velocity = Vector(circles_reflection_velocity_a.x + circles_reflection_velocity_b.x, circles_reflection_velocity_a.y + circles_reflection_velocity_b.y);
+    Vector targets_reflection_velocity = Vector(targets_reflection_velocity_a.x + targets_reflection_velocity_b.x, targets_reflection_velocity_a.y + targets_reflection_velocity_b.y);
+
+    Vector correction_vector = scaleVector(centres_vector, (circle.radius + target.radius - magnitude(distance_vector)) / 2);
+
+    circle.set_x_velocity(circles_reflection_velocity.x );
+    circle.set_y_velocity(circles_reflection_velocity.y );
+    target.set_x_velocity(targets_reflection_velocity.x );
+    target.set_y_velocity(targets_reflection_velocity.y);
+
+    circle.set_x(circle.position.x - correction_vector.x);
+    circle.set_y(circle.position.y - correction_vector.y);
+    target.set_x(target.position.x + correction_vector.x);
+    target.set_y(target.position.y + correction_vector.y);
+}
+
+void applyFields(Circle &circle, Circle &target, Vector &centres_vector, Vector &distance_vector){
+    double acceleration_factor = MAX_REPULSION_FORCE * FIELD_CONSTANT * (1-exp(-pow(magnitude(distance_vector),2)));
+    Vector repulsionForce = scaleVector(centres_vector, acceleration_factor);
+
+    circle.set_x_velocity(circle.velocity.x - repulsionForce.x / circle.mass * DT);
+    circle.set_y_velocity(circle.velocity.y - repulsionForce.y / circle.mass * DT);
+    target.set_x_velocity(target.velocity.x + repulsionForce.x / target.mass * DT);
+    target.set_y_velocity(target.velocity.y + repulsionForce.y / target.mass * DT);
+}
+
+void applyGravity(Circle &circle){
+    if (circle.position.y - circle.radius >= BOTTOM_BUFFER){
+        circle.set_y_velocity(circle.velocity.y + ACC_GRAVITY * DT);
+    }
+}
+
+void handleWallCollisions(Circle &circle){
+    double next_x = circle.position.x + circle.velocity.x * DT;
+    double next_y = circle.position.y + circle.velocity.y * DT;
+
+    if (next_x - circle.radius <= 0) {
+        circle.set_x(circle.radius);
+        if (circle.velocity.x < 0){
+            circle.set_x_velocity(-circle.velocity.x);
+        }
+    }
+    if (next_x + circle.radius >= WINDOW_WIDTH) {
+        circle.set_x(WINDOW_WIDTH - circle.radius);
+        if (circle.velocity.x > 0){
+            circle.set_x_velocity(-circle.velocity.x);
+        }
+    }
+
+    if (next_y + circle.radius > WINDOW_HEIGHT) {
+        circle.set_y(WINDOW_HEIGHT - circle.radius);
+        if (circle.velocity.y > 0){
+            circle.set_y_velocity(-circle.velocity.y);
+        }
+    }
+    if (next_y - circle.radius <= BOTTOM_BUFFER) {
+        circle.set_y(BOTTOM_BUFFER + circle.radius);
+        double loss_y = (1-FLOOR_DAMPENING) * (1-exp(-pow(circle.velocity.y,2)));
+        double loss_x = (1-FLOOR_DAMPENING) * (1-exp(-pow(circle.velocity.x,2)));
+        circle.set_x_velocity(circle.velocity.x * loss_x);
+        if (circle.velocity.y < 0){
+            circle.set_y_velocity(circle.velocity.y * -loss_y);
+        }
+    }
+}
+
+void applySpeedLimit(Circle &circle){
+    if (abs(circle.velocity.x) > MAX_SPEED){
+            circle.set_x_velocity(circle.velocity.x/abs(circle.velocity.x) * MAX_SPEED);
+        }
+        if (abs(circle.velocity.y) > MAX_SPEED){
+            circle.set_y_velocity(circle.velocity.y/abs(circle.velocity.y) * MAX_SPEED);
+        }
+}
+
+void applyVelocities(Circle &circle){
+    int oldBinX = findBin(circle.position.x);
+    int oldBinY = findBin(circle.position.y);
+
+    circle.set_x(circle.position.x + circle.velocity.x * DT);
+    circle.set_y(circle.position.y + circle.velocity.y * DT);
+
+    int newBinX = findBin(circle.position.x);
+    int newBinY = findBin(circle.position.y);
+
+    // If the circle has moved to a different bin
+    if (oldBinX != newBinX || oldBinY != newBinY) {
+        // Find and remove the circle from the old bin
+        auto &oldBin = GRID[oldBinX][oldBinY];
+        auto it = find_if(oldBin.begin(), oldBin.end(), [&circle](Circle* c) { return c == &circle; });
+        if (it != oldBin.end()) {
+            oldBin.erase(it);
+        }
+
+        // Add the circle to the new bin
+        GRID[newBinX][newBinY].push_back(&circle);
+    }
+
+}
+
+double getBallAngularAcc(Ball &ball, Vector centre_position, Vector centre_velocity){
+    double v = 0;
+    for (int i=0; i<ball.numNodes; i++){
+        Vector centre_to_node = Vector(getFrom(i, ball.nodes)->position.x-centre_position.x, getFrom(i, ball.nodes)->position.y-centre_position.y);
+        Vector node_tangent = calculatePerpendicularVector(centre_to_node);
+        v += dotProduct(ball.velocity, node_tangent);
+    }
+    v *= 9e10;
+
+    double angular_acc = pow(v,2) / pow(ball.radius,2);
+    return angular_acc;
+}
+
+vector<Vector> getBallCentre(Ball &ball){
+    double sumXPos = 0;
+    double sumYPos = 0;
+    double sumXVel = 0;
+    double sumYVel = 0;
+    vector<Vector> result;
+    for (Circle* circlePTR : ball.nodes){
+        sumXPos += circlePTR->position.x;
+        sumYPos += circlePTR->position.y;
+        sumXVel += circlePTR->velocity.x;
+        sumYVel += circlePTR->velocity.y;
+    }
+    result.push_back(Vector(sumXPos/ball.numNodes, sumYPos/ball.numNodes));
+    result.push_back(Vector(sumXVel/ball.numNodes, sumYVel/ball.numNodes));
+    return result;
+}
+
+void restoreBallShape(Ball& ball){
+    Vector centre_position = getBallCentre(ball)[0];
+    Vector centre_velocity = getBallCentre(ball)[1];
+
+    double a = getBallAngularAcc(ball, centre_position, centre_velocity);
+    ball.orientationVector = rotateVector(ball.orientationVector, a);
+    cout << a << endl;
+
+    Vector radius = scaleVector(ball.orientationVector, ball.radius);
+    double segmentAngle = 2 * PI /ball.numNodes;
+
+    Vector next_centre_position = Vector(centre_position.x + centre_velocity.x * DT, centre_position.y + centre_velocity.y * DT);
+
+    for (int i=0; i<ball.numNodes; i++){
+        Vector cast = rotateVector(radius, segmentAngle * i);
+        Vector cast_translated = Vector(centre_position.x + cast.x, centre_position.y + cast.y);
+        Vector position_correction = Vector(cast_translated.x - getFrom(i, ball.nodes)->position.x, cast_translated.y - getFrom(i, ball.nodes)->position.y);
+        getFrom(i, ball.nodes)->set_x(getFrom(i, ball.nodes)->position.x + ELASTICITY_CONSTANT * position_correction.x);
+        getFrom(i, ball.nodes)->set_y(getFrom(i, ball.nodes)->position.y + ELASTICITY_CONSTANT * position_correction.y);
+        getFrom(i, ball.nodes)->set_x_velocity(getFrom(i, ball.nodes)->velocity.x - ELASTICITY_CONSTANT * position_correction.x);
+        getFrom(i, ball.nodes)->set_y_velocity(getFrom(i, ball.nodes)->velocity.y - ELASTICITY_CONSTANT * position_correction.y);
+    }
+}
+
+int getRandomNumber(int x, int y) {
+    random_device rd;  // Obtain a random number from hardware
+    mt19937 gen(rd()); // Seed the generator
+
+    // Define the distribution
+    uniform_int_distribution<> distrib(x, y);
+
+    // Generate and return a random number
+    return distrib(gen);
+}
+
+void generateRandomBalls(int count) {
+    srand(time(nullptr)); // Seed the random number generator
+
+    for (int i = 0; i < count; ++i) {
+        int posx = getRandomNumber(0, WINDOW_WIDTH);
+        int posy = getRandomNumber(0, WINDOW_HEIGHT);
+        int rad = getRandomNumber(20, 20);
+        int mass = getRandomNumber(48, 49);
+        int xvel = getRandomNumber(-20, 20);
+        int yvel = getRandomNumber(-0, 0);
+
+        draw_circle(Vector(posx, posy), rad, mass, Vector(xvel, yvel));
+    }
+}
+
+void Render(HDC hdc) {
+    Graphics graphics(hdc);
+    graphics.Clear(Color(255, 255, 255, 255)); // Clear to white
+
+    Pen pen(Color(255, 0, 0, 255)); // Red pen
+    Brush* brush = new SolidBrush(Color(255, 0, 0, 255)); // Red brush
+
+    for (const Circle& circle : circles) {
+        graphics.FillEllipse(brush, (int)(circle.position.x - circle.radius), (int)((WINDOW_HEIGHT-circle.position.y) - circle.radius), (int)(circle.radius * 2), (int)(circle.radius * 2));
+        // graphics.DrawEllipse(&pen, circle.x - circle.radius, circle.y - circle.radius, circle.radius * 2, circle.radius * 2);
+    }
+
+    delete brush;
+}
+
+void draw_Ball(Vector pos, Vector ori, Vector vel, double radius, int numNodes, double numRadii, double nodeMass, double nodeFieldRadius) {
+    Ball ball = Ball(pos , ori, vel, radius, numNodes, numRadii, nodeMass, nodeFieldRadius);
+    balls.push_back(ball);
+}
+
+void draw_circle(Vector position, double radius, double mass, Vector velocity) {
+    Circle new_circle = Circle(position, radius, mass, velocity, radius * FIELD_RADIUS_MULTIPLE);
+    circles.push_back(new_circle);
+    GRID[findBin(new_circle.position.x)][findBin(new_circle.position.y)].push_back(&new_circle);
+}
+
+void Update() {
+
+    for (Circle& circle : circles) {
+        applyGravity(circle);
+
+        int contact_cells = ceil(circle.radius*2/GRID_LENGTH);
+        int field_cells = ceil(circle.field_radius*2/GRID_LENGTH);
+        int span = max(contact_cells, field_cells);
+
+        int xBin = findBin(circle.position.x);
+        int yBin = findBin(circle.position.y);
+
+        for (int x=-span; x<=span; x++){
+            for (int y=-span; y<=span; y++){
+                if (xBin + x >0 && xBin + x < findBin(WINDOW_WIDTH) &&  yBin + y > 0 &&  yBin + y < findBin(WINDOW_HEIGHT)){
+                    for (Circle*& target_ptr : GRID[xBin + x][yBin+y]){
+                        Circle& target = *target_ptr;
+                        if (&circle != target_ptr){
+                            Vector circle_velocity_vector(circle.velocity.x, circle.velocity.y);
+                            Vector target_velocity_vector(target.velocity.x, target.velocity.y);
+                            Vector distance_vector = Vector(target.position.x - circle.position.x, target.position.y - circle.position.y);
+                            Vector centres_vector = normalize(distance_vector);
+                            Vector tangent_vector = normalize(calculatePerpendicularVector(distance_vector));
+
+                            if (magnitude(distance_vector) <= circle.radius + target.radius) {
+                                calculateCollision(circle, target, distance_vector, circle_velocity_vector, target_velocity_vector, centres_vector, tangent_vector);
+                            }
+                            if (magnitude(distance_vector) <= circle.field_radius) {
+                                applyFields(circle, target, centres_vector, distance_vector);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        handleWallCollisions(circle);
+        applySpeedLimit(circle);
+        applyVelocities(circle);
+    }
+
+    // cout << &circles[3] << endl;
+    // cout << balls[0].nodes[3] << endl; // vector<Circle*> might become invalid because reserve can invalidate all the other pointers which existed in the vector before 
+
+    for (Ball &ball : balls){
+        restoreBallShape(ball);
+    }
+
+    
+
+    // Force a repaint
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+
+int main() {
+    if (!Initialize()) {
+        return 1;
+    }
+
+    // draw_circle(Vector(640, 7000), 10, 1000, Vector(0, -100));
+    generateRandomBalls(150);
+    // draw_Ball(Vector(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), Vector(0,1), Vector(0,0), 100, 16, 10, 20, 99); 
+    // draw_Ball(Vector(WINDOW_WIDTH/4, WINDOW_HEIGHT/4), Vector(0,1), Vector(50,50), 100, 20, 10, 20, 99); 
+
+    // draw_circle(1600, 200, 100, 49, -50, 0); //PROBLEM BALLS
+    // draw_circle(1600, 600, 100, 50, 50, 50); //PROBLEM BALLS
+
+    // draw_circle(800, 200, 11, 50, 10, 1); //REVEALS PROBLEM BALLS
+    // draw_circle(1470, 200, 11, 49, -10, 0); //REVEALS PROBLEM BALLS, BIG OR SMALL MASS 
+
+    // draw_circle(800, 200, 100, 50, 100, 1); //REVEALS PROBLEM BALLS
+    // draw_circle(1470, 200, 100, 49, -100, 0); //REVEALS PROBLEM BALLS, BIG OR SMALL MASS 
+
+    // draw_circle(800, 200, 50, 50, 0, 0); //REVEALS PROBLEM BALLS
+    // draw_circle(800, 400, 50, 49, -10, 0); //REVEALS PROBLEM BALLS, BIG OR SMALL MASS 
+
+    // draw_circle(1800, 700, 20, 10, 0, -5);
+    // draw_circle(1800, 500, 20, 50, 0, 0);
+
+    auto previous_time = chrono::high_resolution_clock::now();
+
+    // Main message loop
+    MSG msg = {};
+    while (msg.message != WM_QUIT) {
+        auto current_time = chrono::high_resolution_clock::now();
+        chrono::duration<double> elapsed = current_time - previous_time;
+        
+        if (elapsed.count() >= REFRESH_TIME) {
+            Update();
+            previous_time = current_time;
+        }
+
+        // Process any pending messages in the message queue
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        } else {
+            // Optionally sleep for a short time to reduce CPU usage
+            this_thread::sleep_for(chrono::milliseconds(1));
+        }
+    }
+
+    // Cleanup
+    GdiplusShutdown(gdiplusToken);
+    return 0;
+}

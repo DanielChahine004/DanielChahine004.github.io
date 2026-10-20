@@ -1,0 +1,26 @@
+---
+// Renders an optimised image by filename from src/assets/wix (or any src/assets subfolder).
+// If the file isn't present yet, renders a neutral placeholder instead of breaking the build.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props { src?: string; alt: string; width?: number; class?: string; loading?: 'lazy' | 'eager'; }
+const { src, alt, width = 800, class: cls, loading = 'lazy' } = Astro.props;
+
+const all = import.meta.glob<{ default: ImageMetadata }>('/src/assets/**/*.{png,jpg,jpeg,webp,avif}', { eager: true });
+// Files are stored with '~' replaced by '-': Vite's dev server refuses to serve paths containing '~' on Windows.
+const file = src?.replaceAll('~', '-');
+const match = file ? Object.entries(all).find(([p]) => p.endsWith('/' + file))?.[1].default : undefined;
+---
+{match
+  ? <Image src={match} alt={alt} width={Math.min(width, match.width)} class={cls} loading={loading} />
+  : <div class:list={['img-ph', cls]} role="img" aria-label={alt}></div>}
+
+<style>
+  .img-ph {
+    aspect-ratio: 4 / 3;
+    background:
+      radial-gradient(circle at 30% 30%, var(--accent-soft), transparent 60%),
+      linear-gradient(135deg, var(--line), var(--surface));
+  }
+</style>

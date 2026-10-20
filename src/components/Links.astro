@@ -1,0 +1,14 @@
+---
+import { site } from '../data/site';
+const labels: Record<string, string> = { linkedin: 'LinkedIn', github: 'GitHub', scholar: 'Google Scholar', orcid: 'ORCID' };
+const links = Object.entries(site.links).filter(([, url]) => url);
+---
+{links.length > 0 && (
+  <ul class="links">
+    {links.map(([k, url]) => <li><a class="btn" href={url} target="_blank" rel="noopener">{labels[k]} ↗</a></li>)}
+  </ul>
+)}
+<style>
+  .links { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .links .btn { padding: 0.5rem 0.9rem; font-size: 0.88rem; }
+</style>
