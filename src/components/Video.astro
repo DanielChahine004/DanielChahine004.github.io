@@ -21,13 +21,30 @@ const poster = frame ? (await getImage({ src: frame, width: Math.min(width, fram
 <video class={cls} src={`/videos/${src}`} poster={poster} controls={controls} preload="none" playsinline muted={hover} loop={hover} data-hover-play={hover ? '' : undefined}></video>
 
 <script>
-  // Only where hovering is possible, and not for people who asked for reduced motion.
-  if (matchMedia('(hover: hover) and (pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    for (const video of document.querySelectorAll<HTMLVideoElement>('video[data-hover-play]')) {
+  const videos = document.querySelectorAll<HTMLVideoElement>('video[data-hover-play]');
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Data saver on (Chrome/Android): don't download videos nobody asked for.
+  const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+
+  if (calm) {
+    // Leave videos alone for people who asked for reduced motion.
+  } else if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    // Mouse: play while hovering the card.
+    for (const video of videos) {
       const target = video.closest('.card') ?? video;
       target.addEventListener('pointerenter', () => { video.play().catch(() => {}); });
       // Someone who turned the sound on is watching it properly, so leave it playing.
       target.addEventListener('pointerleave', () => { if (video.muted) video.pause(); });
     }
+  } else if (!saveData) {
+    // Touch: there's no hover, so play while most of the video is on screen, like a feed.
+    const seen = new IntersectionObserver((entries) => {
+      for (const { target, isIntersecting } of entries) {
+        const video = target as HTMLVideoElement;
+        if (isIntersecting) video.play().catch(() => {});
+        else if (video.muted) video.pause();
+      }
+    }, { threshold: 0.6 });
+    for (const video of videos) seen.observe(video);
   }
 </script>

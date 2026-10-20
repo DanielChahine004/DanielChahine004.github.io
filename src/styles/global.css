@@ -78,3 +78,8 @@ p { margin: 0 0 1em; text-wrap: pretty; }
 .prose ul { padding-left: 1.2rem; }
 .prose li { margin-bottom: 0.35em; }
 .prose em { color: var(--muted); }
+
+/* Scroll reveal (script in Base.astro): content fades up as it enters the screen. */
+@keyframes reveal-rise { from { opacity: 0; transform: translateY(16px); } }
+.reveal { opacity: 0; }
+.reveal.in { animation: reveal-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-delay, 0ms) both; }
