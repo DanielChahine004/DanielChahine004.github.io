@@ -17,7 +17,7 @@ const groups = categories
       <h1>Things I’ve built and studied</h1>
       <p class="muted intro">Research scholarships, industry engineering, software and design work, from quantum hardware to brain imaging.</p>
       <h2 class="group">Featured</h2>
-      <div class="grid">{featured.map((p) => <ProjectCard project={p} size="large" />)}</div>
+      <div class="grid featured">{featured.map((p, i) => <ProjectCard project={p} size={i === 0 ? 'wide' : 'large'} />)}</div>
       {groups.map((g) => (
         <>
           <h2 class="group">{g.c}</h2>
@@ -32,4 +32,8 @@ const groups = categories
   .intro { max-width: 60ch; font-size: 1.1rem; }
   .group { margin: 3rem 0 1.25rem; font-size: 1.4rem; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 1.25rem; }
+  /* Featured: the lead project spans the row, the rest sit two across (one column on phones). */
+  .grid.featured { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid.featured > :global(.card:first-of-type) { grid-column: 1 / -1; }
+  @media (max-width: 680px) { .grid.featured { grid-template-columns: 1fr; } }
 </style>

@@ -3,19 +3,20 @@ import type { CollectionEntry } from 'astro:content';
 import Img from './Img.astro';
 import Video from './Video.astro';
 
-interface Props { project: CollectionEntry<'projects'>; size?: 'large' | 'small'; }
+// 'wide' is a large card laid out landscape (image left, text right), used to lead the featured row.
+interface Props { project: CollectionEntry<'projects'>; size?: 'large' | 'small' | 'wide'; }
 const { project, size = 'small' } = Astro.props;
 const d = project.data;
 const href = d.featured ? `/projects/${project.id}` : d.href;
 const Tag = href ? 'a' : 'article';
-const width = size === 'large' ? 900 : 600;
+const width = size === 'small' ? 600 : 1000;
 // Card videos are hover previews with no controls, so they also work inside a linked card.
 // (A linked card can't hold its own links, so those show on the project page instead.)
 const playable = d.video;
 // Cards without a page open their photo or video full screen ("theatre") instead.
 const theatre = !href && (d.video || d.cover);
 ---
-<Tag class:list={['card', size, { theatre }]} href={href}>
+<Tag class:list={['card', size, { large: size === 'wide', theatre }]} href={href}>
   <div class="media">{playable ? <Video src={d.video!} width={width} controls={false} /> : <Img src={d.cover} alt="" width={width} />}</div>
   <div class="body">
     <p class="meta">{d.category}{d.period && ` · ${d.period}`}</p>
@@ -89,6 +90,19 @@ const theatre = !href && (d.video || d.cover);
   .meta { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0; }
   h3 { margin: 0; font-size: 1.12rem; }
   .large h3 { font-size: 1.35rem; }
+  /* Wide: landscape layout with a bigger title; stacks like a normal card on narrow screens. */
+  @media (min-width: 760px) {
+    .wide { flex-direction: row; }
+    /* The text sets the card's height; the image fills that space rather than stretching it. */
+    .wide .media { flex: 1.25; aspect-ratio: auto; min-height: 340px; position: relative; }
+    .wide .media :global(img), .wide .media :global(video), .wide .media :global(.img-ph) { position: absolute; inset: 0; }
+    /* Anchor to the top: posters and figures usually carry their title there. */
+    .wide .media :global(img) { object-position: top; }
+    .wide .body { flex: 1; padding: 2rem 2.2rem; justify-content: center; gap: 0.7rem; }
+    .wide h3 { font-size: 1.7rem; }
+    .wide .summary { font-size: 1.02rem; }
+    .wide .chips { margin-top: 0.4rem; }
+  }
   .org { margin: 0; font-size: 0.88rem; color: var(--muted); font-weight: 500; }
   .summary { margin: 0; color: var(--muted); font-size: 0.95rem; }
   .chips { margin-top: auto; padding-top: 0.4rem; }

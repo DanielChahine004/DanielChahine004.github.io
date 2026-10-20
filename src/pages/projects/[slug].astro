@@ -17,42 +17,126 @@ const { Content } = await render(project);
     <div class="wrap">
       <a class="back" href="/projects">← All projects</a>
       <header class="head">
+        <div class="head-text">
+          <p class="eyebrow">{d.category}{d.period && ` · ${d.period}`}</p>
+          <h1>{d.title}</h1>
+          {d.org && <p class="org">{d.org}</p>}
+          <p class="lede">{d.summary}</p>
+          <ul class="chips">{d.tags.map((t) => <li class="chip">{t}</li>)}</ul>
+          {d.links.length > 0 && (
+            <div class="links">{d.links.map((l) => <a class="btn" href={l.url} target="_blank" rel="noopener">{l.label} ↗</a>)}</div>
+          )}
+        </div>
         {d.logos.length > 0 && <div class="logos">{d.logos.map((l) => <Img src={l} alt="" width={240} loading="eager" />)}</div>}
-        <p class="eyebrow">{d.category}{d.period && ` · ${d.period}`}</p>
-        <h1>{d.title}</h1>
-        {d.org && <p class="org">{d.org}</p>}
-        <p class="lede">{d.summary}</p>
-        <ul class="chips">{d.tags.map((t) => <li class="chip">{t}</li>)}</ul>
-        {d.links.length > 0 && (
-          <div class="links">{d.links.map((l) => <a class="btn" href={l.url} target="_blank" rel="noopener">{l.label} ↗</a>)}</div>
-        )}
       </header>
       {d.video && <Video src={d.video} class="feature-video" width={1200} />}
       <div class="prose"><Content /></div>
       {d.gallery.length > 0 && (
         <section class="gallery-wrap">
           <h2>Gallery</h2>
-          <div class="gallery">{d.gallery.map((g) => (g.endsWith('.mp4') ? <Video src={g} /> : <Img src={g} alt="" width={900} />))}</div>
+          <div class="gallery">
+            {d.gallery.map((g, i) => (g.endsWith('.mp4')
+              ? <Video src={g} />
+              : <button class="shot" type="button" aria-label={`View image ${i + 1} of ${d.gallery.length} full screen`}><Img src={g} alt="" width={900} /></button>))}
+          </div>
+          <dialog class="lightbox" aria-label="Gallery viewer">
+            <button class="lb-btn lb-close" type="button" aria-label="Close">✕</button>
+            <button class="lb-btn lb-prev" type="button" aria-label="Previous image">‹</button>
+            <img class="lb-img" alt="" />
+            <button class="lb-btn lb-next" type="button" aria-label="Next image">›</button>
+            <p class="lb-count" aria-live="polite"></p>
+          </dialog>
         </section>
       )}
     </div>
   </article>
 </Base>
 
+<script>
+  // Gallery viewer: click an image to see it full screen; arrows, keys or a swipe to move between.
+  const dialog = document.querySelector<HTMLDialogElement>('.lightbox');
+  const shots = [...document.querySelectorAll<HTMLButtonElement>('.gallery .shot')];
+  if (dialog && shots.length) {
+    const img = dialog.querySelector<HTMLImageElement>('.lb-img')!;
+    const count = dialog.querySelector<HTMLElement>('.lb-count')!;
+    let current = 0;
+    const show = (i: number) => {
+      current = (i + shots.length) % shots.length;
+      img.src = shots[current].querySelector('img')!.currentSrc;
+      count.textContent = `${current + 1} / ${shots.length}`;
+    };
+    shots.forEach((shot, i) => shot.addEventListener('click', () => { show(i); dialog.showModal(); }));
+    dialog.querySelector('.lb-prev')!.addEventListener('click', () => show(current - 1));
+    dialog.querySelector('.lb-next')!.addEventListener('click', () => show(current + 1));
+    dialog.querySelector('.lb-close')!.addEventListener('click', () => dialog.close());
+    // A click on the dark backdrop (not the image or buttons) closes it.
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') show(current - 1);
+      if (e.key === 'ArrowRight') show(current + 1);
+    });
+    let startX = 0;
+    dialog.addEventListener('pointerdown', (e) => { startX = e.clientX; });
+    dialog.addEventListener('pointerup', (e) => {
+      const dx = e.clientX - startX;
+      if (e.pointerType !== 'mouse' && Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
+    });
+  }
+</script>
+
 <style>
   .back { display: inline-block; margin-bottom: 2rem; font-weight: 500; text-decoration: none; }
-  .head { max-width: 75ch; margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--line); }
+  .head {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2rem; align-items: start;
+    margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--line);
+  }
+  .head-text { max-width: 75ch; }
   h1 { font-size: clamp(2rem, 4vw, 2.8rem); }
   .org { font-weight: 600; color: var(--muted); margin-bottom: 1rem; }
   .lede { font-size: 1.2rem; color: var(--muted); }
   .links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.2rem; }
   .gallery-wrap { margin-top: 3.5rem; }
   .gallery { columns: 3 260px; column-gap: 1rem; }
-  .logos { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem; margin-bottom: 1.5rem; }
-  .logos :global(img) { height: 56px; width: auto; object-fit: contain; }
+  /* Organisation logos: a column at the top right of the header; a row under the text on phones. */
+  .logos { display: flex; flex-direction: column; align-items: flex-end; gap: 1rem; padding-top: 0.3rem; }
+  .logos :global(img) { height: 52px; width: auto; max-width: 140px; object-fit: contain; }
+  @media (max-width: 720px) {
+    .head { grid-template-columns: 1fr; gap: 1.2rem; }
+    .logos { flex-direction: row; flex-wrap: wrap; align-items: center; padding-top: 0; }
+    .logos :global(img) { height: 40px; }
+  }
   :global(.feature-video) { display: block; width: 100%; max-height: 80vh; margin-bottom: 2.5rem; border-radius: 10px; background: #000; }
   .gallery :global(video) { display: block; width: 100%; margin-bottom: 1rem; border-radius: 10px; background: #000; break-inside: avoid; }
   .gallery :global(img), .gallery :global(.img-ph) {
     width: 100%; margin-bottom: 1rem; border-radius: 10px; border: 1px solid var(--line); break-inside: avoid; background: #fff;
+  }
+  .shot { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; break-inside: avoid; border-radius: 10px; }
+  .shot :global(img) { display: block; transition: transform 0.2s, box-shadow 0.2s; }
+  .shot:hover :global(img) { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .shot:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .lightbox {
+    width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
+    background: transparent; color: #fff;
+  }
+  .lightbox[open] { display: grid; place-items: center; }
+  :global(html:has(dialog[open])) { overflow: hidden; }
+  .lightbox::backdrop { background: rgb(0 0 0 / 0.92); }
+  .lb-img {
+    max-width: calc(100vw - 8rem); max-height: calc(100dvh - 7rem); border-radius: 8px; background: #fff;
+    user-select: none; -webkit-user-drag: none;
+  }
+  .lb-btn {
+    position: fixed; width: 48px; height: 48px; border-radius: 50%; border: 0; cursor: pointer;
+    background: rgb(255 255 255 / 0.15); color: #fff; font-size: 1.6rem; line-height: 1;
+  }
+  .lb-btn:hover, .lb-btn:focus-visible { background: rgb(255 255 255 / 0.3); }
+  .lb-close { top: 12px; right: 12px; font-size: 1.2rem; }
+  .lb-prev { left: 16px; top: 50%; translate: 0 -50%; }
+  .lb-next { right: 16px; top: 50%; translate: 0 -50%; }
+  .lb-count { position: fixed; bottom: 16px; left: 50%; translate: -50% 0; margin: 0; font-size: 0.9rem; color: rgb(255 255 255 / 0.8); }
+  @media (max-width: 720px) {
+    .lb-img { max-width: calc(100vw - 1.5rem); max-height: calc(100dvh - 8rem); }
+    .lb-prev, .lb-next { top: auto; bottom: 8px; translate: none; }
   }
 </style>

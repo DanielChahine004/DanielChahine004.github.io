@@ -49,6 +49,9 @@ const { src, alt } = Astro.props;
   for (let i = 1; i <= STEPS; i++) cumulative[i] = cumulative[i - 1] + rateAt((i - 0.5) / STEPS);
   const countsSoFar = (p: number) => cumulative[Math.round(p * STEPS)] / cumulative[STEPS];
 
+  // "click" with a mouse, "tap" on touchscreens.
+  const rescanVerb = matchMedia('(hover: hover) and (pointer: fine)').matches ? 'click' : 'tap';
+
   const fig = document.querySelector<HTMLElement>('.scanner');
   if (fig && !matchMedia('(prefers-reduced-motion: reduce)').matches) setup(fig);
 
@@ -180,7 +183,7 @@ const { src, alt } = Astro.props;
         if (t < ACQUIRE_MS + CLEAR_MS) return requestAnimationFrame(frame);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         fig.classList.remove('scanning');
-        readout.textContent = `${counts.toLocaleString()} coincidences · tap to rescan`;
+        readout.textContent = `${counts.toLocaleString()} coincidences · ${rescanVerb} to rescan`;
         running = false;
       };
       // If anything goes wrong mid-scan, show the portrait rather than leave it hidden.

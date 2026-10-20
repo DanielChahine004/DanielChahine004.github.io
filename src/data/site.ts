@@ -58,13 +58,14 @@ export const publications = [
     venue: 'IEEE Journal of Biomedical and Health Informatics, vol. 29, no. 12, pp. 8719–8726, Dec. 2025',
     note: 'Selected for oral presentation at IEEE BHI 2025',
     url: 'https://ieeexplore.ieee.org/document/11283638',
+    status: 'Published',
     project: 'usyd-vri',
   },
   {
-    // No public preprint yet: add `url` once it's out, and update `venue` and `note` when accepted.
+    // No public preprint yet: add `url` once it's out, and update `venue` and `status` when accepted.
     title: 'PRISM: A Physics-Informed Spatiotemporal CNN for Event Localisation in Nanocomposite Monolithic PET Scintillators',
     authors: 'R. Abraham, D. Chahine, D. R. Franklin',
     venue: 'Submitted to Physics in Medicine & Biology, 2026',
-    note: 'Under review',
+    status: 'Under review',
   },
 ];

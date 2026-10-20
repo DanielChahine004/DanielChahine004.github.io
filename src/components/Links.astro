@@ -1,14 +1,18 @@
 ---
 import { site } from '../data/site';
+import Icon from './Icon.astro';
 const labels: Record<string, string> = { linkedin: 'LinkedIn', github: 'GitHub', scholar: 'Google Scholar', orcid: 'ORCID' };
+const icons: Record<string, 'linkedin' | 'github' | 'orcid'> = { linkedin: 'linkedin', github: 'github', orcid: 'orcid' };
 const links = Object.entries(site.links).filter(([, url]) => url);
 ---
 {links.length > 0 && (
   <ul class="links">
-    {links.map(([k, url]) => <li><a class="btn" href={url} target="_blank" rel="noopener">{labels[k]} ↗</a></li>)}
+    {links.map(([k, url]) => (
+      <li><a class="btn" href={url} target="_blank" rel="noopener">{icons[k] && <Icon name={icons[k]} size={16} />}{labels[k]}</a></li>
+    ))}
   </ul>
 )}
 <style>
   .links { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .links .btn { padding: 0.5rem 0.9rem; font-size: 0.88rem; }
+  .links .btn { padding: 0.5rem 0.9rem; font-size: 0.88rem; gap: 0.45rem; }
 </style>
