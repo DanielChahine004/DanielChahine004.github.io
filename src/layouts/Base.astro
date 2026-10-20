@@ -59,31 +59,6 @@ const nav = [
   </body>
 </html>
 
-<script>
-  // Fade content up as it scrolls into view. Things already on screen at load are left alone
-  // (no flash), and nothing happens for people who asked for reduced motion.
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
-    const seen = new IntersectionObserver((entries) => {
-      for (const { target, isIntersecting } of entries) {
-        if (!isIntersecting) continue;
-        target.classList.add('in');
-        seen.unobserve(target);
-        // Drop the classes afterwards so the cards' own hover/tap motion works normally.
-        target.addEventListener('animationend', () => target.classList.remove('reveal', 'in'), { once: true });
-      }
-    }, { rootMargin: '0px 0px 10% 0px' });
-
-    for (const el of document.querySelectorAll<HTMLElement>('.card, .pubs li, .facts, .gallery > *, .feature-video')) {
-      if (el.getBoundingClientRect().top < innerHeight) continue;
-      // Stagger items that sit side by side in a row.
-      const i = el.parentElement ? [...el.parentElement.children].indexOf(el) : 0;
-      el.style.setProperty('--reveal-delay', `${(i % 3) * 40}ms`);
-      el.classList.add('reveal');
-      seen.observe(el);
-    }
-  }
-</script>
-
 <style>
   .skip { position: absolute; left: -999px; }
   .skip:focus { left: 1rem; top: 1rem; z-index: 10; background: var(--surface); padding: 0.5rem 1rem; }
