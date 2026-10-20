@@ -4,5 +4,6 @@ summary: "A schematic explaining the hypothalamic\u2013pituitary\u2013thyroid ho
 category: Coursework
 tags: ["Physiology"]
 cover: 56298d_b2453c2946984947953c16d6701fdb7d~mv2.png
-order: 22
+order: 25
+hidden: true
 ---

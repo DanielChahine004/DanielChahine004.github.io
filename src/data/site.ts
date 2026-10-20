@@ -25,9 +25,8 @@ export const site = {
   intro: 'Engineer and systems thinker, building the tools to see inside the body more clearly.',
 
   bio: [
-    'I’m a PhD candidate at the University of Technology Sydney, researching monolithic PET detectors. I use Monte Carlo optical simulation and information-theoretic bounds to understand how scintillator design choices shape what a detector can actually measure.',
-    'Before that, I completed a Bachelor of Engineering (Honours) in Biomedical Engineering at UTS with First Class Honours, making the Dean’s List four years running. Along the way I held research scholarships in quantum hardware at UNSW and neuroimaging machine learning at the University of Sydney’s Brain and Mind Centre, interned on an engineering project for Cochlear, and spent a summer in computational biology at the Garvan Institute.',
-    'I think we’re in for a bright future, and I want to help bring it about through intelligent engineering, collaboration and applied systems thinking.',
+    'I’m a PhD candidate at UTS researching monolithic PET detectors, using Monte Carlo simulation and information theory to understand how scintillator design shapes what a detector can measure.',
+    'I graduated in Biomedical Engineering from UTS with First Class Honours, held research scholarships in quantum hardware (UNSW) and neuroimaging AI (University of Sydney), interned on a project for Cochlear, and spent a summer at the Garvan Institute.',
   ],
 
   skills: [
@@ -39,16 +38,40 @@ export const site = {
     'Embedded & PCB design',
   ],
 
-  // Shown at the top of the Education box (both degrees are from UTS).
-  educationLogo: { src: '/logos/uts.svg', alt: 'University of Technology Sydney' },
   education: [
-    { title: 'PhD, Biomedical Engineering', org: 'University of Technology Sydney', period: '2026 – present' },
+    // logo: a compact mark shown beside the entry (public/logos/).
+    { title: 'PhD, Biomedical Engineering', org: 'University of Technology Sydney', period: '2026 – present', logo: '/logos/uts-mark.svg' },
     {
       title: 'Bachelor of Engineering (Honours), Biomedical Engineering',
       org: 'University of Technology Sydney',
       period: 'Completed 2026',
       note: 'First Class Honours · Dean’s List',
+      logo: '/logos/uts-mark.svg',
     },
+  ],
+
+  // "Current research" section on the home page. Keep it public-level: no unpublished specifics.
+  research: {
+    intro:
+      'My PhD at UTS studies monolithic scintillator detectors for PET: how much information about each gamma-ray event they can capture, and how crystal design affects it.',
+    // The broad areas the thesis spans (kept general on purpose, not individual papers).
+    areas: [
+      { title: 'Simulation', text: 'Monte Carlo modelling of detectors in GATE and Geant4' },
+      { title: 'Information theory', text: 'Fundamental limits on what a detector can measure' },
+      { title: 'Machine learning', text: 'Learning event positions from detector signals' },
+      { title: 'Image reconstruction', text: 'Turning detected events into PET images' },
+    ],
+  },
+
+  // Logo strip under About: where I've studied and worked, oldest first. Logos live in public/logos/.
+  affiliations: [
+    { name: 'University of Technology Sydney', logo: '/logos/uts-compact.svg', period: '2022 –', role: 'Biomedical Eng. · PhD' },
+    { name: 'OPTIK Engineering Consultancy', logo: '/logos/optik.jpg', period: '2023', role: 'Engineering internship' },
+    { name: 'Cochlear', logo: '/logos/cochlear.png', period: '2023', role: 'Client project' },
+    { name: 'UNSW Sydney', logo: '/logos/unsw.svg', period: '2024', role: 'Quantum research' },
+    { name: 'Sydney Quantum Academy', logo: '/logos/sqa.svg', period: '2024', role: 'Research scholarship' },
+    { name: 'The University of Sydney', logo: '/logos/usyd.svg', period: '2024 – 25', role: 'Neuroimaging AI' },
+    { name: 'Garvan Institute of Medical Research', logo: '/logos/garvan.png', period: '2025 – 26', role: 'Computational biology' },
   ],
 };
 

@@ -4,5 +4,5 @@ summary: "The UTS Biomedical Engineering Society's 2024 showcase project: a biom
 category: Design
 tags: ["Computer vision", "Embedded", "Bluetooth"]
 cover: 56298d_e700462804534dc7bb7e0d4feb6c59ae~mv2.png
-order: 13
+order: 14
 ---

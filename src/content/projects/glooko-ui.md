@@ -4,5 +4,6 @@ summary: "A modern interface wireframe in Figma and Visme for Glooko, a platform
 category: Design
 tags: ["Figma", "UX"]
 cover: 56298d_e8f7db6fda894949b4c21c5b982b5104~mv2.png
-order: 19
+order: 23
+hidden: true
 ---

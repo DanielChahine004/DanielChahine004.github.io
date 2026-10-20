@@ -4,5 +4,5 @@ summary: "Replicated and trained Hasani et al.'s Liquid Time-Constant Network an
 category: Research
 tags: ["EEG", "Neural ODEs", "Signal processing"]
 cover: 56298d_c52424bb6fef4d8bb5b24ce723b03fa7~mv2.png
-order: 11
+order: 13
 ---

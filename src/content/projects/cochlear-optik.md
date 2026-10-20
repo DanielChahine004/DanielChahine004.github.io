@@ -13,16 +13,15 @@ logos:
   - 56298d_4e2560c5b6cb48bc9a0f3b45eab47e5f~mv2.png
 order: 3
 gallery:
-  - 56298d_64eca2244312418292f1f932274379f0~mv2.jpg
-  - 56298d_4dad0be415d7469382502d0ad0b0f7c8~mv2.png
-  - 56298d_9fb334a45dc54be89c6d5003c09b52f9~mv2.png
-  - 56298d_277edbc9c22240f8b594fc01c0477280~mv2.png
-  - 56298d_30a52b5db2934df5bc1a6aa168935e71~mv2.jpg
-  - 56298d_a5375332f98342c486cc12301f3c132a~mv2.png
-  - 56298d_5c4e500106c54369ad17a0649756612e~mv2.png
-  - 56298d_90beaf3f8c6541099946393f89b36b2c~mv2.png
-  - 56298d_7fab8513ba7041778f5566cc4825285c~mv2.png
-  - 56298d_cffce6aa03e449968cf979270399f90f~mv2.png
+  - "56298d_64eca2244312418292f1f932274379f0~mv2.jpg | The project team"
+  - "56298d_4dad0be415d7469382502d0ad0b0f7c8~mv2.png | Team lunch during the internship"
+  - "56298d_9fb334a45dc54be89c6d5003c09b52f9~mv2.png | Render of the quality-control device"
+  - "56298d_277edbc9c22240f8b594fc01c0477280~mv2.png | Exploded assembly drawing with parts list"
+  - "56298d_a5375332f98342c486cc12301f3c132a~mv2.png | Inside the enclosure (render)"
+  - "56298d_5c4e500106c54369ad17a0649756612e~mv2.png | Operator screen: barcode and magnet checks"
+  - "56298d_90beaf3f8c6541099946393f89b36b2c~mv2.png | Assembling the device"
+  - "56298d_7fab8513ba7041778f5566cc4825285c~mv2.png | The finished device"
+  - "56298d_cffce6aa03e449968cf979270399f90f~mv2.png | MagScope, used to capture the magnetic-field scans"
 ---
 
 In winter 2023, I completed a 12-week engineering internship at OPTIK Engineering Consultancy. With teammates Anish Chauhan, Adrian Kumar and Jacob Bayne, I delivered a project for Cochlear: an original quality-control device that identifies mislabelled or mis-manufactured implant components from their magnetic fields.

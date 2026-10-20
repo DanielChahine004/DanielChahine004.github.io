@@ -4,5 +4,5 @@ summary: "Printed alginate hydrogels of various structures on a BIO X bioprinter
 category: Coursework
 tags: ["Bioprinting", "Biomaterials"]
 cover: 56298d_d80d4ec872fc4c65b4d7a36af8cf14bc~mv2.png
-order: 17
+order: 18
 ---

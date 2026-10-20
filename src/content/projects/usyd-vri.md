@@ -11,25 +11,25 @@ order: 1
 links:
   - { label: IEEE JBHI paper, url: "https://ieeexplore.ieee.org/document/11283638" }
 gallery:
-  - 56298d_ee5e3c0f68bf4339be1dcf960272c390~mv2.png
-  - 56298d_ebbba6b2d24e474a9476c373133430c1~mv2.png
-  - 56298d_0b883d7847ee47a68e9c798903a4b435~mv2.png
-  - 56298d_a1e0d383621e4a95a5f463bbc78f658a~mv2.png
-  - 56298d_7b55e2c2352e4d849c35ac62f4625fc8~mv2.png
-  - 56298d_656389610e624cc5a90f1153d9bf2b14~mv2.png
-  - 56298d_77005a150e434e3ab681d2b312af15ff~mv2.png
-  - 56298d_2c405d1280514921a7eb51fce5ca95eb~mv2.png
-  - 56298d_966ad65b7903469999868ed7d7e9946f~mv2.png
-  - 56298d_2604489000594c2d867ae6c99590c73a~mv2.png
-  - 56298d_b2702bc6745c42489ca3cc756e34b694~mv2.png
-  - 56298d_bc40e2a10d3942f6823877b4f937ea39~mv2.png
-  - 56298d_46b89308c90d470d970d1bd47735c1b7~mv2.png
-  - 56298d_5f3208826e524c9c8a1f66cffcecde39~mv2.png
-  - 56298d_86673dcfa8524d6ebfa239a1e29319e6~mv2.png
-  - 56298d_470b30f3f4424761bbaae57e98ce013e~mv2.png
-  - 56298d_bf56d76a543f480aba0f496010661a62~mv2.jpg
-  - 56298d_105d5601bd604588aa9aa099b2a5db7a~mv2.png
-  - 56298d_1fb3b9d838aa4f26a3618f6dea345b33~mv2.png
+  - "56298d_ee5e3c0f68bf4339be1dcf960272c390~mv2.png | Vacation Research Internship certificate, summer 2024–25"
+  - "56298d_ebbba6b2d24e474a9476c373133430c1~mv2.png | The original and new model architectures"
+  - "56298d_0b883d7847ee47a68e9c798903a4b435~mv2.png | Predicted brain-state volumes across forecast timesteps"
+  - "56298d_a1e0d383621e4a95a5f463bbc78f658a~mv2.png | The University of Sydney’s post about the scholarship"
+  - "56298d_7b55e2c2352e4d849c35ac62f4625fc8~mv2.png | Centre-voxel activation over time: target and prediction"
+  - "56298d_656389610e624cc5a90f1153d9bf2b14~mv2.png | Old model, target and new model, side by side"
+  - "56298d_77005a150e434e3ab681d2b312af15ff~mv2.png | Iterative prediction: error grows with each predicted frame"
+  - "56298d_2c405d1280514921a7eb51fce5ca95eb~mv2.png | Masked MSE per frame for each model"
+  - "56298d_966ad65b7903469999868ed7d7e9946f~mv2.png | Accelerated Scholarship certificate, autumn 2025"
+  - "56298d_2604489000594c2d867ae6c99590c73a~mv2.png | The published paper in IEEE JBHI"
+  - "56298d_b2702bc6745c42489ca3cc756e34b694~mv2.png | The preprint on arXiv"
+  - "56298d_bc40e2a10d3942f6823877b4f937ea39~mv2.png | Results figures from the paper"
+  - "56298d_46b89308c90d470d970d1bd47735c1b7~mv2.png | Scholarship report: voxel-wise forecasting with 4D Swin Transformers"
+  - "56298d_5f3208826e524c9c8a1f66cffcecde39~mv2.png | Contents of the scholarship report"
+  - "56298d_86673dcfa8524d6ebfa239a1e29319e6~mv2.png | The 4D Swin Transformer U-Net architecture"
+  - "56298d_470b30f3f4424761bbaae57e98ce013e~mv2.png | Poster: EEG signal analysis pipeline for sleep-spindle detection"
+  - "56298d_bf56d76a543f480aba0f496010661a62~mv2.jpg | Presenting the sleep-spindle poster"
+  - "56298d_105d5601bd604588aa9aa099b2a5db7a~mv2.png | Sleep-spindle detection literature behind the pipeline"
+  - "56298d_1fb3b9d838aa4f26a3618f6dea345b33~mv2.png | Vacation Research Internship certificate, winter 2025"
 ---
 
 ## Project 1 — 4D Swin Transformer for rs-fMRI forecasting

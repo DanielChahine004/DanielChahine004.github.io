@@ -5,12 +5,17 @@ import Img from '../../components/Img.astro';
 import Video from '../../components/Video.astro';
 
 export async function getStaticPaths() {
-  const projects = await getCollection('projects', (p) => p.data.featured);
+  const projects = await getCollection('projects', (p) => !p.data.hidden && (p.data.featured || p.data.page));
   return projects.map((p) => ({ params: { slug: p.id }, props: { project: p } }));
 }
 const { project } = Astro.props;
 const d = project.data;
 const { Content } = await render(project);
+// Gallery entries are "file" or "file | caption".
+const gallery = d.gallery.map((g) => {
+  const [file, caption] = g.split(' | ').map((s) => s.trim());
+  return { file, caption: caption || undefined };
+});
 ---
 <Base title={d.title} description={d.summary}>
   <article class="section">
@@ -35,9 +40,14 @@ const { Content } = await render(project);
         <section class="gallery-wrap">
           <h2>Gallery</h2>
           <div class="gallery">
-            {d.gallery.map((g, i) => (g.endsWith('.mp4')
-              ? <Video src={g} />
-              : <button class="shot" type="button" aria-label={`View image ${i + 1} of ${d.gallery.length} full screen`}><Img src={g} alt="" width={900} /></button>))}
+            {gallery.map(({ file, caption }) => (
+              <figure class="item">
+                {file.endsWith('.mp4')
+                  ? <Video src={file} />
+                  : <button class="shot" type="button" data-caption={caption} aria-label={`View full screen${caption ? `: ${caption}` : ''}`}><Img src={file} alt={caption ?? ''} width={900} /></button>}
+                {caption && <figcaption>{caption}</figcaption>}
+              </figure>
+            ))}
           </div>
           <dialog class="lightbox" aria-label="Gallery viewer">
             <button class="lb-btn lb-close" type="button" aria-label="Close">✕</button>
@@ -63,7 +73,8 @@ const { Content } = await render(project);
     const show = (i: number) => {
       current = (i + shots.length) % shots.length;
       img.src = shots[current].querySelector('img')!.currentSrc;
-      count.textContent = `${current + 1} / ${shots.length}`;
+      const caption = shots[current].dataset.caption;
+      count.textContent = `${current + 1} / ${shots.length}${caption ? ` · ${caption}` : ''}`;
     };
     shots.forEach((shot, i) => shot.addEventListener('click', () => { show(i); dialog.showModal(); }));
     dialog.querySelector('.lb-prev')!.addEventListener('click', () => show(current - 1));
@@ -106,10 +117,13 @@ const { Content } = await render(project);
     .logos :global(img) { height: 40px; }
   }
   :global(.feature-video) { display: block; width: 100%; max-height: 80vh; margin-bottom: 2.5rem; border-radius: 10px; background: #000; }
-  .gallery :global(video) { display: block; width: 100%; margin-bottom: 1rem; border-radius: 10px; background: #000; break-inside: avoid; }
+  /* Each gallery item (image or video, plus optional caption) stays together within a column. */
+  .item { margin: 0 0 1.1rem; break-inside: avoid; }
+  .gallery :global(video) { display: block; width: 100%; border-radius: 10px; background: #000; }
   .gallery :global(img), .gallery :global(.img-ph) {
-    width: 100%; margin-bottom: 1rem; border-radius: 10px; border: 1px solid var(--line); break-inside: avoid; background: #fff;
+    width: 100%; border-radius: 10px; border: 1px solid var(--line); background: #fff;
   }
+  figcaption { margin-top: 0.4rem; font-size: 0.82rem; line-height: 1.4; color: var(--muted); }
   .shot { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; break-inside: avoid; border-radius: 10px; }
   .shot :global(img) { display: block; transition: transform 0.2s, box-shadow 0.2s; }
   .shot:hover :global(img) { transform: translateY(-2px); box-shadow: var(--shadow); }

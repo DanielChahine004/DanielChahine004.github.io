@@ -4,5 +4,5 @@ summary: "Used nTop to design a spinal fusion cage with an organic, gradient-por
 category: Design
 tags: ["nTop", "Additive manufacturing", "FEA"]
 cover: 56298d_2911a6daadc04639a245cb46b7cd83c8~mv2.png
-order: 14
+order: 15
 ---

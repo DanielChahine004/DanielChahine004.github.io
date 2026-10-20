@@ -7,7 +7,7 @@ import Video from './Video.astro';
 interface Props { project: CollectionEntry<'projects'>; size?: 'large' | 'small' | 'wide'; }
 const { project, size = 'small' } = Astro.props;
 const d = project.data;
-const href = d.featured ? `/projects/${project.id}` : d.href;
+const href = d.featured || d.page ? `/projects/${project.id}` : d.href;
 const Tag = href ? 'a' : 'article';
 const width = size === 'small' ? 600 : 1000;
 // Card videos are hover previews with no controls, so they also work inside a linked card.
