@@ -89,7 +89,7 @@ export const publications = [
     // No public preprint yet: add `url` once it's out, and update `venue` and `status` when accepted.
     title: 'PRISM: A Physics-Informed Spatiotemporal CNN for Event Localisation in Nanocomposite Monolithic PET Scintillators',
     authors: 'R. Abraham, D. Chahine, D. R. Franklin',
-    venue: 'Physics in Medicine & Biology, 2026',
+    venue: 'Submitted to Physics in Medicine & Biology, 2026',
     status: 'Under review',
   },
 ];
