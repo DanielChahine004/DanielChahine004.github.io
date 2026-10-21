@@ -2,11 +2,11 @@
 title: "Autonomous humanoid robot — UTS Biomedical Engineering Society"
 summary: "As the society's Chief Technical Officer, I lead a volunteer team building a humanoid robot, showcased at UTS TechFest 2025 and winner of the 2026 ActivateUTS Award for Most Innovative Student Initiative."
 org: "UTS Biomedical Engineering Society · Chief Technical Officer"
-period: "2025 – present"
+period: "2025 – 2026"
 category: Design
 tags: [Systems integration, Embedded, Computer vision, 3D printing, Team leadership]
 cover: bme-humanoid-with-adrian.jpg
-page: true
+featured: true
 order: 10
 # Newest (2026, Phase 2) first, then the 2025 torso and showcases.
 gallery:
@@ -26,7 +26,7 @@ gallery:
   - bme-qidi-printer.mp4
 ---
 
-The UTS Biomedical Engineering Society runs hands-on engineering projects that give students the practical, cross-disciplinary experience that is hard to get in class. After our computer-vision-controlled bionic hand in 2024, we set out in 2025 to build a humanoid robot. As Chief Technical Officer, I lead a team of about 20 volunteers from biomedical, electrical, mechanical, mechatronic and software engineering.
+The UTS Biomedical Engineering Society runs hands-on engineering projects that give students the practical, cross-disciplinary experience that is hard to get in class. After our computer-vision-controlled bionic hand in 2024, where I was software lead, we set out in 2025 to build a humanoid robot. As Chief Technical Officer from 2025 to 2026, I lead a team of about 20 volunteers from biomedical, electrical, mechanical, mechatronic and software engineering.
 
 **We won the 2026 ActivateUTS Award for Most Innovative Student Initiative.**
 

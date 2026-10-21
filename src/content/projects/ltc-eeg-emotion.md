@@ -5,4 +5,6 @@ category: Research
 tags: ["EEG", "Neural ODEs", "Signal processing"]
 cover: 56298d_c52424bb6fef4d8bb5b24ce723b03fa7~mv2.png
 order: 13
+links:
+  - { label: Code on GitHub, url: "https://github.com/DanielChahine004/BI_AT3_LTC_Network_EEG_Emotions" }
 ---

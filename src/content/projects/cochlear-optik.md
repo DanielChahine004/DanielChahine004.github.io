@@ -1,6 +1,6 @@
 ---
 title: "Automated quality-control system for Cochlear \u2014 OPTIK Engineering internship"
-summary: "Designed and delivered a clean-room-compliant device that identifies mislabelled or mis-manufactured implant components from their magnetic field, with a random forest classifier at its core."
+summary: "Designed and delivered a clean-room-compliant device that identifies mislabelled or mis-manufactured implant components from their magnetic field. It replaced manual X-ray inspection and entered commercial manufacturing."
 org: "OPTIK Engineering Consultancy \u00b7 Client: Cochlear"
 period: "Winter 2023"
 category: Industry
@@ -28,6 +28,13 @@ In winter 2023, I completed a 12-week engineering internship at OPTIK Engineerin
 
 We worked with client representatives Patrick Sorsby (Director of Process Technology) and Gabriel Wainmann (Principal Engineer, Robotics), under the mentorship of Osman Mah, Wai Sum Peter Hau and Christopher Wilson.
 
+## Outcome
+
+- Prototyped across 6 devices with over 95% classification accuracy.
+- Replaced manual X-ray inspection with an automated assessment taking under 2 seconds.
+- After handover, the system entered commercial manufacturing at Cochlear.
+- Found a critical memory leak in the vendor's API through stress testing.
+
 ## Mechanical design and manufacturing
 
 The clean-room-compliant enclosure was modelled in Fusion 360, and technical drawings were produced to guide its fabrication by Ti2 Pty Ltd.
@@ -44,4 +51,4 @@ The system was built in Python and included:
 - Debugging support and custom error handling
 - A graphical user interface for operators
 - An architecture designed for future product compatibility
-- Support documentation, FMEA and operation flow diagrams
+- Support documentation, FMEA, CAPA and DMR records, and operation flow diagrams

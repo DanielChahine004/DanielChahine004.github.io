@@ -6,4 +6,6 @@ tags: ["C++", "Eigen", "MNIST"]
 cover: 56298d_3e51e86dacce485ba0d06e2b80780391f003.jpg
 video: 56298d_3e51e86dacce485ba0d06e2b80780391.mp4
 order: 12
+links:
+  - { label: Code on GitHub, url: "https://github.com/DanielChahine004/Cpp_Neural_Network_From_Scratch" }
 ---

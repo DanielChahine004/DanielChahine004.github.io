@@ -36,7 +36,7 @@ gallery:
 
 *Summer 2024–25 · $4,000 AUD scholarship*
 
-Supervised by Yifei Sun and Prof Jinglei Lv at the Brain and Mind Centre, I helped improve an autoencoder-style model that forecasts resting-state brain activity from 4D fMRI. It takes 32 consecutive fMRI volumes (23 seconds of scan) and predicts the next 10 (7.2 seconds).
+Supervised by Prof Fernando Calamante and Prof Jinglei Lv at the Brain and Mind Centre, working with Yifei Sun, I helped improve an autoencoder-style model that forecasts resting-state brain activity from 4D fMRI. It takes 32 consecutive fMRI volumes (23 seconds of scan) and predicts the next 10 (7.2 seconds).
 
 **Outcome**
 
@@ -50,7 +50,7 @@ Supervised by Yifei Sun and Prof Jinglei Lv at the Brain and Mind Centre, I help
 *Autumn 2025 · $1,500 AUD scholarship extension*
 
 - Added new preprocessing and autoregressive prediction methods to the training pipeline, extending stable forecasts from 10 to as many as 200 frames.
-- Implemented a combined SSIM and masked-MSE loss, cutting loss by a further 50%.
+- Implemented a combined SSIM and masked-MSE loss to keep long forecasts structurally faithful.
 - Validated every model and prediction configuration for the publication on remote Linux HPC clusters (DGX, 4× A100).
 - The paper was posted to arXiv, accepted to a special issue of **IEEE JBHI** and presented at **IEEE BHI 2025**.
 
@@ -63,5 +63,5 @@ With Prof Wei Chen, Dr Jia Liu and Dr Shawn Dexiao Kong, I built a robust EEG pr
 **Outcome**
 
 - Adapted state-of-the-art preprocessing from the literature, using wavelet-transform frequency-domain features to improve spindle localisation.
-- Achieved up to 96% segmentation overlap with the ground truth using thresholding.
+- Validated threshold-based detections against the ground-truth spindle annotations.
 - Built preliminary Swin Transformer and convolutional U-Net models for downstream segmentation before handing the pipeline over to the lab.
