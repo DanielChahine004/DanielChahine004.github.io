@@ -62,7 +62,6 @@ p { margin: 0 0 1em; text-wrap: pretty; }
 .wrap { width: min(var(--max), 100% - 2rem); margin-inline: auto; }
 .section { padding-block: clamp(3rem, 7vw, 5.5rem); }
 .section + .section { border-top: 1px solid var(--line); }
-.eyebrow { font: 600 0.78rem/1 var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.9rem; }
 .muted { color: var(--muted); }
 .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
 .section-head h2 { margin: 0; }
@@ -84,7 +83,8 @@ p { margin: 0 0 1em; text-wrap: pretty; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; padding: 0; margin: 0; }
 /* 1rem rather than a full pill, so a chip that wraps to two lines still looks right. */
-.chip { font-size: 0.78rem; font-weight: 500; padding: 0.25rem 0.6rem; border-radius: 1rem; background: var(--accent-soft); color: var(--ink); }
+/* Neutral, so teal stays for actions and links. */
+.chip { font-size: 0.78rem; font-weight: 500; padding: 0.25rem 0.6rem; border-radius: 1rem; background: color-mix(in srgb, var(--line) 60%, transparent); color: var(--ink); }
 
 /* Reduced motion: keep colour and shadow changes, drop the movement. */
 @media (prefers-reduced-motion: reduce) {

@@ -22,10 +22,11 @@ export const site = {
     orcid: 'https://orcid.org/0009-0001-4177-522X',
   },
 
-  intro: 'Engineer and systems thinker, building the tools to see inside the body more clearly.',
+  // Hero line under the name: what he does first, then the old tagline.
+  intro: 'PhD candidate in biomedical engineering at UTS. Engineer and systems thinker, building the tools to see inside the body more clearly.',
 
+  // The PhD itself is described in `research` below, so the bio covers the path here.
   bio: [
-    'I’m a PhD candidate at UTS researching monolithic PET detectors, using Monte Carlo simulation and information theory to understand how scintillator design shapes what a detector can measure.',
     'I graduated in Biomedical Engineering from UTS with First Class Honours, held research scholarships in quantum hardware (UNSW) and neuroimaging AI (University of Sydney), interned on a project for Cochlear, and spent a summer at the Garvan Institute.',
   ],
 
@@ -88,7 +89,7 @@ export const publications = [
     // No public preprint yet: add `url` once it's out, and update `venue` and `status` when accepted.
     title: 'PRISM: A Physics-Informed Spatiotemporal CNN for Event Localisation in Nanocomposite Monolithic PET Scintillators',
     authors: 'R. Abraham, D. Chahine, D. R. Franklin',
-    venue: 'Submitted to Physics in Medicine & Biology, 2026',
+    venue: 'Physics in Medicine & Biology, 2026',
     status: 'Under review',
   },
 ];

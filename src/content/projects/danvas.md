@@ -1,5 +1,5 @@
 ---
-title: "danvas — interactive browser canvases from Python"
+title: "danvas: interactive browser canvases from Python"
 summary: "An open-source library, published on PyPI, that turns any Python script into a live, multi-user browser UI: sliders, plots, tables, video, 3D models and custom React panels, all wired to ordinary Python functions."
 org: "Open source · AGPL-3.0"
 category: Software

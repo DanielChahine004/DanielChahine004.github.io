@@ -1,5 +1,5 @@
 ---
-title: "Autonomous humanoid robot — UTS Biomedical Engineering Society"
+title: "Autonomous humanoid robot"
 summary: "As the society's Chief Technical Officer, I lead a volunteer team building a humanoid robot, showcased at UTS TechFest 2025 and winner of the 2026 ActivateUTS Award for Most Innovative Student Initiative."
 org: "UTS Biomedical Engineering Society · Chief Technical Officer"
 period: "2025 – 2026"

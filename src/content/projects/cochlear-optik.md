@@ -1,7 +1,7 @@
 ---
-title: "Automated quality-control system for Cochlear \u2014 OPTIK Engineering internship"
+title: "Automated quality-control system for Cochlear"
 summary: "Designed and delivered a clean-room-compliant device that identifies mislabelled or mis-manufactured implant components from their magnetic field. It replaced manual X-ray inspection and entered commercial manufacturing."
-org: "OPTIK Engineering Consultancy \u00b7 Client: Cochlear"
+org: "OPTIK Engineering Consultancy internship \u00b7 Client: Cochlear"
 period: "Winter 2023"
 category: Industry
 tags: [Python, Random forest, OCR, Fusion 360, GUI]

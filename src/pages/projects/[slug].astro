@@ -23,7 +23,7 @@ const gallery = d.gallery.map((g) => {
       <a class="back" href="/projects">← All projects</a>
       <header class="head">
         <div class="head-text">
-          <p class="eyebrow">{d.category}{d.period && ` · ${d.period}`}</p>
+          <p class="meta">{d.category}{d.period && ` · ${d.period}`}</p>
           <h1>{d.title}</h1>
           {d.org && <p class="org">{d.org}</p>}
           <p class="lede">{d.summary}</p>
@@ -111,6 +111,7 @@ const gallery = d.gallery.map((g) => {
     margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--line);
   }
   .head-text { max-width: 75ch; }
+  .meta { font-size: 0.9rem; font-weight: 500; color: var(--muted); margin-bottom: 0.6rem; }
   h1 { font-size: clamp(2rem, 4vw, 2.8rem); }
   .org { font-weight: 600; color: var(--muted); margin-bottom: 1rem; }
   .lede { font-size: 1.2rem; color: var(--muted); }

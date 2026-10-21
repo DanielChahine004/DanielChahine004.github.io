@@ -1,7 +1,7 @@
 ---
-title: "Brain-state forecasting and EEG analysis \u2014 USYD Vacation Research Scholarships"
+title: "Brain-state forecasting and EEG analysis"
 summary: "Built a novel 4D Swin Transformer U-Net to forecast resting-state fMRI (published in IEEE JBHI), then an EEG preprocessing pipeline for sleep-spindle segmentation."
-org: "University of Sydney \u00b7 Brain and Mind Centre"
+org: "University of Sydney \u00b7 Brain and Mind Centre \u00b7 Vacation Research Scholarships"
 period: "2024 \u2013 2025"
 category: Research
 tags: [PyTorch, Transformers, fMRI, EEG, HPC]

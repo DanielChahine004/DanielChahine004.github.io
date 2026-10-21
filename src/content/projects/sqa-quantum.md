@@ -1,7 +1,7 @@
 ---
-title: "Electron-on-neon quantum computer \u2014 SQA Summer Research Scholarship"
+title: "Electron-on-neon quantum computer"
 summary: "Redesigned the quantum computer housing, simulated resonators and filters, and wrote instrument-control software with Dr Maja Cassidy's group at UNSW."
-org: "UNSW Sydney \u00b7 Sydney Quantum Academy"
+org: "UNSW Sydney \u00b7 Sydney Quantum Academy Summer Research Scholarship"
 period: "Summer 2024"
 category: Research
 tags: [Fusion 360, Ansys HFSS, LTspice, Python, PCB]

@@ -1,7 +1,7 @@
 ---
-title: "Continuous-coordinate image reconstruction for monolithic PET — Honours thesis"
+title: "Continuous-coordinate PET image reconstruction"
 summary: "Built a GPU-accelerated list-mode OSEM pipeline that reconstructs PET images straight from continuous gamma-interaction coordinates, skipping the sinogram binning that throws resolution away."
-org: "University of Technology Sydney · Honours capstone"
+org: "University of Technology Sydney · Honours thesis"
 category: Research
 tags: [Image reconstruction, CUDA, Python, PET, OSEM]
 cover: pet-recon-cover.png
