@@ -8,6 +8,8 @@ tags: [Systems integration, Embedded, Computer vision, 3D printing, Team leaders
 cover: bme-humanoid-with-adrian.jpg
 featured: true
 order: 10
+links:
+  - { label: Robot control code on GitHub, url: "https://github.com/DanielChahine004/robot_udp" }
 # Newest (2026, Phase 2) first, then the 2025 torso and showcases.
 gallery:
   - bme-humanoid-2026.mp4
