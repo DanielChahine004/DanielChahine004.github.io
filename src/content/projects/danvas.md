@@ -12,7 +12,7 @@ links:
   - { label: PyPI package, url: "https://pypi.org/project/danvas/" }
 gallery:
   - "danvas-catalogue.png | The built-in panels on one canvas"
-  - "danvas-multiuser.mp4 | Two browsers sharing one canvas, with live cursors"
+  - "danvas-multiuser.mp4 | Two browsers, top and bottom, sharing one canvas with live cursors"
   - "danvas-live_plot.mp4 | Streaming telemetry into a live plot"
   - "danvas-cad_model3d.mp4 | The 3D panel viewing a CAD model"
   - "danvas-circuit_dashboard.mp4 | A circuit dashboard built from panels"
