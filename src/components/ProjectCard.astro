@@ -76,13 +76,19 @@ const theatre = !href && (d.video || d.cover);
     display: flex; flex-direction: column;
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
     overflow: hidden; color: inherit; text-decoration: none; height: 100%;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    transition: transform 200ms var(--ease-out), box-shadow 200ms ease, border-color 200ms ease;
   }
-  /* Touchscreens get no hover, so a slight press-in shows the tap registered. */
-  @media (hover: none) {
-    a.card:active, .card.theatre:active { transform: scale(0.985); transition-duration: 0.1s; }
+  /* Lift on hover only with a mouse (it would stick after a tap); a slight press-in for every pointer. */
+  @media (hover: hover) and (pointer: fine) {
+    a.card:hover, .card.theatre:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+    a.card:hover:active, .card.theatre:hover:active { transform: translateY(-3px) scale(0.985); }
   }
-  a.card:hover, .card.theatre:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+  a.card:active, .card.theatre:active { transform: scale(0.985); transition-duration: 100ms; }
+  /* While the full-screen view is open the card behind it stays still. */
+  .card.theatre:has(dialog[open]) { transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .card, .card:hover, .card:active { transform: none !important; }
+  }
   .media { aspect-ratio: 16 / 10; overflow: hidden; background: var(--line); }
   .media :global(img), .media :global(.img-ph) { width: 100%; height: 100%; object-fit: cover; aspect-ratio: auto; }
   /* Fill the card like images do (no letterbox bars); the theatre view shows the whole frame. */
@@ -118,9 +124,23 @@ const theatre = !href && (d.video || d.cover);
   .theatre-panel {
     width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0;
     padding: clamp(16px, 4vw, 48px); border: 0; background: transparent; color: #fff;
+    overscroll-behavior: contain;
   }
   .theatre-panel[open] { display: grid; place-items: center; }
   .theatre-panel::backdrop { background: rgb(0 0 0 / 0.9); }
+  /* Fade in (and the photo eases up from 96%); close a touch faster than it opens. */
+  @media (prefers-reduced-motion: no-preference) {
+    .theatre-panel, .theatre-panel::backdrop {
+      opacity: 0;
+      transition: opacity 150ms ease-out, overlay 150ms allow-discrete, display 150ms allow-discrete;
+    }
+    .theatre-panel[open], .theatre-panel[open]::backdrop { opacity: 1; transition-duration: 220ms; transition-timing-function: var(--ease-out); }
+    .theatre-panel figure { transition: transform 220ms var(--ease-out); }
+    @starting-style {
+      .theatre-panel[open], .theatre-panel[open]::backdrop { opacity: 0; }
+      .theatre-panel[open] figure { transform: scale(0.96); }
+    }
+  }
   figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; max-width: 100%; max-height: 100%; }
   figure :global(img), figure :global(video) {
     display: block; max-width: 100%; max-height: calc(100dvh - 9rem); width: auto; height: auto;
@@ -130,8 +150,12 @@ const theatre = !href && (d.video || d.cover);
   .close {
     position: fixed; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 50%;
     border: 0; background: rgb(255 255 255 / 0.15); color: #fff; font-size: 1.2rem; cursor: pointer;
+    transition: background-color 150ms ease, transform 120ms var(--ease-out);
+    -webkit-user-select: none; user-select: none;
   }
-  .close:hover, .close:focus-visible { background: rgb(255 255 255 / 0.3); }
+  .close:focus-visible { background: rgb(255 255 255 / 0.3); }
+  @media (hover: hover) and (pointer: fine) { .close:hover { background: rgb(255 255 255 / 0.3); } }
+  .close:active { transform: scale(0.94); }
 
   :global(html:has(dialog[open])) { overflow: hidden; }
 </style>

@@ -15,6 +15,9 @@
   --max: 1120px;
   --serif: 'Fraunces Variable', Georgia, serif;
   --sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Strong ease-out for things that respond to the user; built-in `ease` is too soft. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --header-h: 4.5rem;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -33,7 +36,12 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+/* scroll-padding keeps #anchor targets clear of the sticky header. No grey flash on tap: elements
+   give their own press feedback instead. */
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: var(--header-h); -webkit-tap-highlight-color: transparent; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+/* On phones the header scrolls away (see Base.astro), so anchors only need a little breathing room. */
+@media (max-width: 560px) { :root { --header-h: 0.5rem; } }
 body {
   margin: 0;
   background: var(--bg);
@@ -43,7 +51,7 @@ body {
 }
 img { max-width: 100%; height: auto; display: block; }
 a { color: var(--accent); text-underline-offset: 3px; }
-a:hover { text-decoration-thickness: 2px; }
+@media (hover: hover) and (pointer: fine) { a:hover { text-decoration-thickness: 2px; } }
 h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; margin: 0 0 0.5em; text-wrap: balance; }
 h1 { font-size: clamp(2.4rem, 5vw, 3.6rem); }
 h2 { font-size: clamp(1.6rem, 3vw, 2.1rem); }
@@ -65,12 +73,23 @@ p { margin: 0 0 1em; text-wrap: pretty; }
   padding: 0.7rem 1.15rem; border-radius: 999px;
   font: 600 0.95rem/1 var(--sans); text-decoration: none;
   border: 1px solid var(--line); color: var(--ink); background: var(--surface);
-  transition: transform 0.15s, border-color 0.15s;
+  transition: transform 160ms var(--ease-out), border-color 150ms ease;
+  -webkit-user-select: none; user-select: none;
 }
-.btn:hover { transform: translateY(-1px); border-color: var(--accent); }
+/* Hover only where there's a real pointer, so lifts don't stick after a tap on a phone. */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { transform: translateY(-1px); border-color: var(--accent); }
+}
+.btn:active { transform: scale(0.97); transition-duration: 100ms; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; padding: 0; margin: 0; }
-.chip { font-size: 0.78rem; font-weight: 500; padding: 0.25rem 0.6rem; border-radius: 999px; background: var(--accent-soft); color: var(--ink); }
+/* 1rem rather than a full pill, so a chip that wraps to two lines still looks right. */
+.chip { font-size: 0.78rem; font-weight: 500; padding: 0.25rem 0.6rem; border-radius: 1rem; background: var(--accent-soft); color: var(--ink); }
+
+/* Reduced motion: keep colour and shadow changes, drop the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn:hover, .btn:active { transform: none; }
+}
 
 /* Prose (project pages) */
 .prose { max-width: 70ch; }

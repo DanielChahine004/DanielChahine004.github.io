@@ -65,8 +65,11 @@ const gallery = d.gallery.map((g) => {
 <script>
   // Gallery viewer: click an image to see it full screen; arrows, keys or a swipe to move between.
   const dialog = document.querySelector<HTMLDialogElement>('.lightbox');
-  const shots = [...document.querySelectorAll<HTMLButtonElement>('.gallery .shot')];
+  // Only images that actually loaded (a missing file renders a placeholder with no <img>).
+  const shots = [...document.querySelectorAll<HTMLButtonElement>('.gallery .shot')].filter((s) => s.querySelector('img'));
   if (dialog && shots.length) {
+    // One image: nothing to step through, so no arrows.
+    if (shots.length < 2) dialog.classList.add('single');
     const img = dialog.querySelector<HTMLImageElement>('.lb-img')!;
     const count = dialog.querySelector<HTMLElement>('.lb-count')!;
     let current = 0;
@@ -74,7 +77,8 @@ const gallery = d.gallery.map((g) => {
       current = (i + shots.length) % shots.length;
       img.src = shots[current].querySelector('img')!.currentSrc;
       const caption = shots[current].dataset.caption;
-      count.textContent = `${current + 1} / ${shots.length}${caption ? ` · ${caption}` : ''}`;
+      const position = shots.length > 1 ? `${current + 1} / ${shots.length}` : '';
+      count.textContent = [position, caption].filter(Boolean).join(' · ');
     };
     shots.forEach((shot, i) => shot.addEventListener('click', () => { show(i); dialog.showModal(); }));
     dialog.querySelector('.lb-prev')!.addEventListener('click', () => show(current - 1));
@@ -86,11 +90,16 @@ const gallery = d.gallery.map((g) => {
       if (e.key === 'ArrowLeft') show(current - 1);
       if (e.key === 'ArrowRight') show(current + 1);
     });
-    let startX = 0;
-    dialog.addEventListener('pointerdown', (e) => { startX = e.clientX; });
+    // Swipe: a long drag or a quick flick moves on; a second finger (pinch-zoom) cancels it.
+    let start: { x: number; t: number } | null = null;
+    dialog.addEventListener('pointerdown', (e) => { start = e.isPrimary ? { x: e.clientX, t: e.timeStamp } : null; });
+    dialog.addEventListener('pointercancel', () => { start = null; });
     dialog.addEventListener('pointerup', (e) => {
-      const dx = e.clientX - startX;
-      if (e.pointerType !== 'mouse' && Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
+      if (!start || e.pointerType === 'mouse' || !e.isPrimary || shots.length < 2) return;
+      const dx = e.clientX - start.x;
+      const velocity = Math.abs(dx) / Math.max(1, e.timeStamp - start.t);
+      if (Math.abs(dx) > 50 || (Math.abs(dx) > 15 && velocity > 0.11)) show(current + (dx < 0 ? 1 : -1));
+      start = null;
     });
   }
 </script>
@@ -113,12 +122,16 @@ const gallery = d.gallery.map((g) => {
   /* Organisation logos: a column at the top right of the header; a row under the text on phones. */
   .logos { display: flex; flex-direction: column; align-items: flex-end; gap: 1rem; padding-top: 0.3rem; }
   .logos :global(img) { height: 52px; width: auto; max-width: 140px; object-fit: contain; }
+  /* Logos are made for white backgrounds; on the dark theme give them a white tile, like the logo strip. */
+  @media (prefers-color-scheme: dark) {
+    .logos :global(img) { background: #fff; padding: 6px 10px; border-radius: 8px; box-sizing: content-box; }
+  }
   @media (max-width: 720px) {
     .head { grid-template-columns: 1fr; gap: 1.2rem; }
     .logos { flex-direction: row; flex-wrap: wrap; align-items: center; padding-top: 0; }
     .logos :global(img) { height: 40px; }
   }
-  :global(.feature-video) { display: block; width: 100%; max-height: 80vh; margin-bottom: 2.5rem; border-radius: 10px; background: #000; }
+  :global(.feature-video) { display: block; width: 100%; max-height: 80svh; margin-bottom: 2.5rem; border-radius: 10px; background: #000; }
   /* Each gallery item (image or video, plus optional caption) stays together within a column. */
   .item { margin: 0 0 1.1rem; break-inside: avoid; }
   .gallery :global(video) { display: block; width: 100%; border-radius: 10px; background: #000; }
@@ -127,17 +140,38 @@ const gallery = d.gallery.map((g) => {
   }
   figcaption { margin-top: 0.4rem; font-size: 0.82rem; line-height: 1.4; color: var(--muted); }
   .shot { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; break-inside: avoid; border-radius: 10px; }
-  .shot :global(img) { display: block; transition: transform 0.2s, box-shadow 0.2s; }
-  .shot:hover :global(img) { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .shot :global(img) { display: block; transition: transform 200ms var(--ease-out), box-shadow 200ms ease; }
+  @media (hover: hover) and (pointer: fine) {
+    .shot:hover :global(img) { transform: translateY(-2px); box-shadow: var(--shadow); }
+  }
+  .shot:active :global(img) { transform: scale(0.98); transition-duration: 100ms; }
   .shot:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .shot :global(img) { transform: none !important; } }
 
   .lightbox {
     width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
     background: transparent; color: #fff;
+    /* The page claims horizontal swipes; vertical pan and pinch-zoom stay with the browser.
+       overscroll-behavior stops a drag here scrolling the page behind or pulling to refresh. */
+    touch-action: pan-y pinch-zoom; overscroll-behavior: contain;
   }
   .lightbox[open] { display: grid; place-items: center; }
   :global(html:has(dialog[open])) { overflow: hidden; }
   .lightbox::backdrop { background: rgb(0 0 0 / 0.92); }
+  .lightbox.single .lb-prev, .lightbox.single .lb-next { display: none; }
+  /* Fade in, image eases up from 96%; closing is a little quicker. Switching images stays instant. */
+  @media (prefers-reduced-motion: no-preference) {
+    .lightbox, .lightbox::backdrop {
+      opacity: 0;
+      transition: opacity 150ms ease-out, overlay 150ms allow-discrete, display 150ms allow-discrete;
+    }
+    .lightbox[open], .lightbox[open]::backdrop { opacity: 1; transition-duration: 220ms; transition-timing-function: var(--ease-out); }
+    .lb-img { transition: transform 220ms var(--ease-out); }
+    @starting-style {
+      .lightbox[open], .lightbox[open]::backdrop { opacity: 0; }
+      .lightbox[open] .lb-img { transform: scale(0.96); }
+    }
+  }
   .lb-img {
     max-width: calc(100vw - 8rem); max-height: calc(100dvh - 7rem); border-radius: 8px; background: #fff;
     user-select: none; -webkit-user-drag: none;
@@ -145,8 +179,13 @@ const gallery = d.gallery.map((g) => {
   .lb-btn {
     position: fixed; width: 48px; height: 48px; border-radius: 50%; border: 0; cursor: pointer;
     background: rgb(255 255 255 / 0.15); color: #fff; font-size: 1.6rem; line-height: 1;
+    transition: background-color 150ms ease, scale 120ms var(--ease-out);
+    -webkit-user-select: none; user-select: none;
   }
-  .lb-btn:hover, .lb-btn:focus-visible { background: rgb(255 255 255 / 0.3); }
+  .lb-btn:focus-visible { background: rgb(255 255 255 / 0.3); }
+  @media (hover: hover) and (pointer: fine) { .lb-btn:hover { background: rgb(255 255 255 / 0.3); } }
+  /* `scale` (not transform) so it doesn't fight the `translate` that positions the arrows. */
+  .lb-btn:active { scale: 0.94; }
   .lb-close { top: 12px; right: 12px; font-size: 1.2rem; }
   .lb-prev { left: 16px; top: 50%; translate: 0 -50%; }
   .lb-next { right: 16px; top: 50%; translate: 0 -50%; }
@@ -154,5 +193,10 @@ const gallery = d.gallery.map((g) => {
   @media (max-width: 720px) {
     .lb-img { max-width: calc(100vw - 1.5rem); max-height: calc(100dvh - 8rem); }
     .lb-prev, .lb-next { top: auto; bottom: 8px; translate: none; }
+    /* Caption sits between the two arrow buttons, at most two lines. */
+    .lb-count {
+      left: 4.5rem; right: 4.5rem; bottom: 12px; translate: none; text-align: center; line-height: 1.35;
+      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+    }
   }
 </style>

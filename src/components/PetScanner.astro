@@ -37,7 +37,10 @@ const { src, alt } = Astro.props;
   const CLEAR_MS = 900;
   const GRID = 80; // resolution of the activity map sampled from the portrait
 
-  // Lines per frame at scan progress p (0–1): rises exponentially to about 70 at the peak, then
+  // Rates and fades below are tuned per 60 Hz frame; each frame scales them by its real duration,
+  // so the scan looks the same on 120 Hz screens.
+  const FRAME_MS = 1000 / 60;
+  // Lines per (60 Hz) frame at scan progress p (0–1): rises exponentially to about 70 at the peak, then
   // eases smoothly back down to nothing (half a cosine) as the image settles.
   const rateAt = (p: number) => p < PEAK
     ? 1.5 * Math.exp((p / PEAK) * Math.log(47))
@@ -128,7 +131,7 @@ const { src, alt } = Astro.props;
       flash[crystalAt(bx, by)] = 1;
     };
 
-    const drawFlashes = () => {
+    const drawFlashes = (k: number) => {
       const r = ((RING_IN + RING_OUT) / 2) * size * dpr;
       ctx.lineWidth = (RING_OUT - RING_IN) * size * dpr * 0.9;
       const step = (Math.PI * 2) / CRYSTALS;
@@ -136,35 +139,42 @@ const { src, alt } = Astro.props;
         if (flash[i] < 0.03) continue;
         ctx.strokeStyle = `rgba(190, 240, 255, ${flash[i] * 0.85})`;
         ctx.beginPath(); ctx.arc(size / 2 * dpr, size / 2 * dpr, r, i * step - Math.PI / 2, i * step + step * 0.7 - Math.PI / 2); ctx.stroke();
-        flash[i] *= 0.82;
+        flash[i] *= 0.82 ** k;
       }
     };
 
-    let running = false;
+    let running = false, scans = 0;
     const run = () => {
       if (running || !cdf.length) return;
       running = true;
+      // A rescan starts from the finished portrait and lets it fade out as the new lines arrive,
+      // rather than blinking it away; the first scan starts from nothing.
+      const rescan = scans++ > 0;
       fig.classList.add('scanning');
-      fig.style.setProperty('--recon', '0');
+      fig.style.setProperty('--recon', rescan ? '1' : '0');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let counts = 0, start = 0;
+      let counts = 0, start = 0, last = 0;
 
       const tick = (now: number) => {
         start ||= now;
         const t = now - start;
+        // This frame's length in 60 Hz frames (capped, so a stalled tab doesn't dump lines at once).
+        const k = last ? Math.min(now - last, 50) / FRAME_MS : 1;
+        last = now;
         const p = Math.min(t / ACQUIRE_MS, 1);
         // 0 until the peak, then 0 → 1: the image takes over from the raw lines.
         const handover = Math.max(0, (p - PEAK) / (1 - PEAK));
 
         // Let older lines fade so the newest stand out and the screen never saturates.
+        const fade = p < 1 ? 0.05 + 0.05 * handover : 0.16;
         ctx.globalCompositeOperation = 'destination-out';
-        ctx.fillStyle = `rgba(0, 0, 0, ${p < 1 ? 0.05 + 0.05 * handover : 0.16})`;
+        ctx.fillStyle = `rgba(0, 0, 0, ${1 - (1 - fade) ** k})`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.globalCompositeOperation = 'lighter';
 
         if (p < 1) {
           // Random rounding, so the last few lines trickle out instead of stopping abruptly.
-          const n = Math.floor(rateAt(p) + Math.random());
+          const n = Math.floor(rateAt(p) * k + Math.random());
           // Lines also dim a little as the image takes over, so the face isn't buried in white.
           lineAlpha = 0.3 * (1 - 0.4 * handover);
           ctx.lineWidth = 0.9 * dpr;
@@ -175,10 +185,12 @@ const { src, alt } = Astro.props;
             ? `acquiring · ${counts.toLocaleString()} coincidences`
             : `reconstructing · OSEM iteration ${iteration}/4`;
         }
-        drawFlashes();
+        drawFlashes(k);
         // The portrait sharpens in proportion to the counts collected so far, like a real scan:
         // fast while the rate climbs, then slowly finishing as the last lines trickle in.
-        fig.style.setProperty('--recon', String(countsSoFar(p)));
+        // On a rescan the old portrait eases out over the first ~250 ms.
+        const outgoing = rescan ? (1 - Math.min(t / 250, 1)) ** 2 : 0;
+        fig.style.setProperty('--recon', String(Math.max(countsSoFar(p), outgoing)));
 
         if (t < ACQUIRE_MS + CLEAR_MS) return requestAnimationFrame(frame);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -212,7 +224,12 @@ const { src, alt } = Astro.props;
     border-radius: 50%; cursor: pointer; overflow: hidden;
     background: radial-gradient(circle closest-side, #121c27 0 76%, #0a1018 77% 100%);
     box-shadow: var(--shadow), inset 0 0 0 1px rgb(255 255 255 / 0.04);
+    transition: transform 160ms var(--ease-out);
+    /* A long-press should rescan, not open the image preview or select anything. */
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
   }
+  .gantry:active { transform: scale(0.98); transition-duration: 100ms; }
+  @media (prefers-reduced-motion: reduce) { .gantry:active { transform: none; } }
   .gantry:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
   /* Detector ring: 72 crystals (5° pitch) between 0.445 and 0.48 of the width. Matches the script. */
   .gantry::before {
@@ -232,5 +249,6 @@ const { src, alt } = Astro.props;
   .readout {
     font: 500 0.75rem/1 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
     letter-spacing: 0.02em; color: var(--muted); min-height: 1em; text-align: center;
+    font-variant-numeric: tabular-nums; /* the live counter doesn't jitter sideways */
   }
 </style>

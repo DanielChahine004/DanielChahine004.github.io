@@ -24,6 +24,9 @@ const nav = [
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Browser bar colour on phones, matching the page background in each theme. -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f5f0" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f141b" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
@@ -71,16 +74,21 @@ const nav = [
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 64px; }
   .brand { font: 600 1.15rem/1 var(--serif); color: var(--ink); text-decoration: none; white-space: nowrap; }
   nav { display: flex; gap: clamp(0.8rem, 2.5vw, 1.8rem); overflow-x: auto; }
-  nav a { color: var(--muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; white-space: nowrap; }
-  nav a:hover, nav a[aria-current='page'] { color: var(--ink); }
+  /* Padding makes the links comfortable tap targets without changing how the bar looks. */
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; white-space: nowrap; padding-block: 0.6rem; }
+  nav a[aria-current='page'] { color: var(--ink); }
+  @media (hover: hover) and (pointer: fine) { nav a:hover { color: var(--ink); } }
+  nav a:active { color: var(--ink); }
+  /* Phones: the two-row bar would cover ~14% of the screen if it stuck, so it scrolls away instead. */
   @media (max-width: 560px) {
-    .bar { height: auto; padding-block: 0.8rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .site-header { position: static; }
+    .bar { height: auto; padding-block: 0.5rem; flex-direction: column; align-items: flex-start; gap: 0; }
   }
   .site-footer { background: var(--surface); border-top: 1px solid var(--line); padding-block: 4rem 2.5rem; }
-  .foot { display: grid; grid-template-columns: 1.4fr 1fr; gap: 2rem; align-items: end; }
+  .foot { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 2rem; align-items: end; }
   .foot h2 { max-width: 22ch; }
-  .mail { font-size: 1.15rem; font-weight: 600; }
+  .mail { font-size: 1.15rem; font-weight: 600; overflow-wrap: anywhere; }
   .foot-side { display: grid; gap: 1.2rem; justify-items: start; }
   .small { font-size: 0.85rem; margin: 0; }
-  @media (max-width: 760px) { .foot { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { .foot { grid-template-columns: minmax(0, 1fr); } }
 </style>
