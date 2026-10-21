@@ -85,7 +85,8 @@ const theatre = !href && (d.video || d.cover);
   a.card:hover, .card.theatre:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
   .media { aspect-ratio: 16 / 10; overflow: hidden; background: var(--line); }
   .media :global(img), .media :global(.img-ph) { width: 100%; height: 100%; object-fit: cover; aspect-ratio: auto; }
-  .media :global(video) { display: block; width: 100%; height: 100%; object-fit: contain; background: #000; }
+  /* Fill the card like images do (no letterbox bars); the theatre view shows the whole frame. */
+  .media :global(video) { display: block; width: 100%; height: 100%; object-fit: cover; background: #000; }
   .body { padding: 1.2rem 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
   .meta { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0; }
   h3 { margin: 0; font-size: 1.12rem; }

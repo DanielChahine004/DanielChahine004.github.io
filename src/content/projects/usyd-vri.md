@@ -5,12 +5,13 @@ org: "University of Sydney \u00b7 Brain and Mind Centre"
 period: "2024 \u2013 2025"
 category: Research
 tags: [PyTorch, Transformers, fMRI, EEG, HPC]
-cover: 56298d_18001b2727d84f229483caa3f5375146~mv2.png
+cover: usyd-brain-states-cover.png
 featured: true
 order: 1
 links:
   - { label: IEEE JBHI paper, url: "https://ieeexplore.ieee.org/document/11283638" }
 gallery:
+  - "56298d_18001b2727d84f229483caa3f5375146~mv2.png | Research poster: voxel-wise brain-state prediction with 4D Swin Transformers"
   - "56298d_ee5e3c0f68bf4339be1dcf960272c390~mv2.png | Vacation Research Internship certificate, summer 2024–25"
   - "56298d_ebbba6b2d24e474a9476c373133430c1~mv2.png | The original and new model architectures"
   - "56298d_0b883d7847ee47a68e9c798903a4b435~mv2.png | Predicted brain-state volumes across forecast timesteps"
