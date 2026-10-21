@@ -10,7 +10,6 @@ order: 0
 gallery:
   - "pet-recon-nema-osem.png | OSEM reconstruction of a NEMA IEC phantom: ground-truth LORs (left) and network-predicted LORs (right)"
   - "pet-recon-nema-ubp.png | The same phantom with unfiltered backprojection, for comparison"
-  - "pet-recon-fwhm-radial.png | Resolution against radial distance for each axial position"
   - "pet-recon-sinograms.png | Sinograms of a point source from ground-truth and predicted LORs"
 ---
 
@@ -31,8 +30,7 @@ I simulated 25 point sources across the field of view of a monolithic annular sc
 
 ## Results
 
-- **Resolution across the field of view.** With network-predicted LORs, resolution was 3.3 to 4.7 mm FWHM at most positions, and barely changed with radial position within about 60 mm of the axial centre.
-- **The reconstruction adds no penalty of its own.** With ground-truth LORs, resolution held at about 2.4 mm FWHM across the central field of view. The gap to the predicted LORs comes entirely from the localiser, so a better localiser translates directly into sharper images.
+- **Point sources land where they should.** Point sources across the field of view were reconstructed in the right place from both ground-truth and predicted LORs. Because the pipeline uses each coordinate as given, a better localiser translates directly into sharper images.
 - **Extended objects work.** OSEM reconstructions of the NEMA IEC phantom placed every hot sphere correctly, with clearly better contrast than backprojection.
 
 The thesis recommends continuous-coordinate list-mode OSEM as the reconstruction standard for future monolithic PET systems, the detectors my PhD now focuses on.
