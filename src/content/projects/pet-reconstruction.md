@@ -10,7 +10,6 @@ order: 0
 gallery:
   - "pet-recon-nema-osem.png | OSEM reconstruction of a NEMA IEC phantom: ground-truth LORs (left) and network-predicted LORs (right)"
   - "pet-recon-nema-ubp.png | The same phantom with unfiltered backprojection, for comparison"
-  - "pet-recon-discretisation.png | Mean resolution across 25 point sources: continuous LORs against five detector grids"
   - "pet-recon-fwhm-radial.png | Resolution against radial distance for each axial position"
   - "pet-recon-sinograms.png | Sinograms of a point source from ground-truth and predicted LORs"
 ---
@@ -32,7 +31,7 @@ I simulated 25 point sources across the field of view of a monolithic annular sc
 
 ## Results
 
-- **Continuous beats binned.** Snapping the exact LORs to virtual detector grids (pitches from about 3 mm to 15 mm) degraded resolution from 2.4 mm to between 9.2 and 16.6 mm FWHM. The network-predicted LORs, reconstructed continuously, reached 5.1 mm, better than even the finest grid, despite carrying localisation error.
+- **Resolution across the field of view.** With network-predicted LORs, resolution was 3.3 to 4.7 mm FWHM at most positions, and barely changed with radial position within about 60 mm of the axial centre.
 - **The reconstruction adds no penalty of its own.** With ground-truth LORs, resolution held at about 2.4 mm FWHM across the central field of view. The gap to the predicted LORs comes entirely from the localiser, so a better localiser translates directly into sharper images.
 - **Extended objects work.** OSEM reconstructions of the NEMA IEC phantom placed every hot sphere correctly, with clearly better contrast than backprojection.
 
