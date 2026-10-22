@@ -10,6 +10,7 @@ featured: true
 order: 1
 links:
   - { label: IEEE JBHI paper, url: "https://ieeexplore.ieee.org/document/11283638" }
+  - { label: "Narrated explainer video (4.5 min)", url: "/videos/usyd-brain-states-explainer.mp4" }
 gallery:
   - "56298d_18001b2727d84f229483caa3f5375146~mv2.png | Research poster: voxel-wise brain-state prediction with 4D Swin Transformers"
   - "56298d_ee5e3c0f68bf4339be1dcf960272c390~mv2.png | Vacation Research Internship certificate, summer 2024–25"
