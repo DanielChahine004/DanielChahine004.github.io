@@ -93,7 +93,7 @@ const others = projects.filter((p) => !p.data.featured).slice(0, 6);
       <ol class="pubs">
         {publications.map((p) => (
           <li>
-            <span class:list={['status', { pending: p.status !== 'Published' }]}>{p.status}</span>
+            <span class:list={['status', { pending: p.status === 'Under review' }]}>{p.status}</span>
             {p.url
               ? <a class="pub-title" href={p.url} target="_blank" rel="noopener">{p.title}<Icon name="external" size={17} /></a>
               : <span class="pub-title">{p.title}</span>}
