@@ -88,7 +88,7 @@ export const publications = [
   {
     // Accepted Nov 2026: add `url` (DOI) and set `status: 'Published'` once it's online.
     title: 'PRISM: A Physics-Informed Spatiotemporal Convolutional Network for Interaction Localisation in Continuous Annular Nanocomposite PET Scintillators',
-    authors: 'R. Abraham, D. Chahine, D. R. Franklin',
+    authors: 'R. Abraham, D. Chahine, M. Safavi-Naeini, D. R. Franklin',
     venue: 'Physics in Medicine & Biology, 2026',
     status: 'Accepted',
   },
