@@ -3,3 +3,6 @@ dist/
 .astro/
 .DS_Store
 .claude/
+
+# Private resume repo (own git history); only resume-public.pdf is copied into public/
+Resume/
