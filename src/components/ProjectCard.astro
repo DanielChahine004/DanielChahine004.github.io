@@ -148,6 +148,12 @@ const theatre = !href && (d.video || d.cover);
     border-radius: 8px; background: #000;
   }
   figcaption { font-size: 0.95rem; text-align: center; color: rgb(255 255 255 / 0.85); max-width: 70ch; }
+  /* Phone turned sideways: the photo or video fills the height; the card already shows the title. */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .theatre-panel { padding: 8px 64px; }
+    figure :global(img), figure :global(video) { max-height: calc(100dvh - 16px); }
+    figcaption { display: none; }
+  }
   .close {
     position: fixed; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 50%;
     border: 0; background: rgb(255 255 255 / 0.15); color: #fff; font-size: 1.2rem; cursor: pointer;

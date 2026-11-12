@@ -200,4 +200,18 @@ const gallery = d.gallery.map((g) => {
       display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
     }
   }
+  /* Phone turned sideways: the image takes the full height, arrows sit at the sides
+     and the caption floats over the bottom edge instead of taking a row of its own. */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .lb-img { max-width: calc(100vw - 8.5rem); max-height: calc(100dvh - 1rem); }
+    .lb-prev, .lb-next { top: 50%; bottom: auto; translate: 0 -50%; }
+    .lb-prev { left: 12px; }
+    .lb-next { right: 12px; }
+    .lb-close { top: 8px; right: 12px; }
+    .lb-count {
+      left: 50%; right: auto; bottom: 8px; translate: -50% 0; max-width: 60vw;
+      padding: 0.2rem 0.7rem; border-radius: 999px; background: rgb(0 0 0 / 0.6);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
+    }
+  }
 </style>
